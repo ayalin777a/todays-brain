@@ -1,0 +1,24 @@
+{
+  "name": "Today's Brain",
+  "short_name": "Today's Brain",
+  "description": "ADHD当事者向けタスク管理アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F3F8",
+  "theme_color": "#7472A8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

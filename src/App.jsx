@@ -1,0 +1,614 @@
+import { useState, useEffect, useRef } from "react";
+
+const PALETTE = {
+  muted: [
+    { hex:"#C0766A", label:"テラコッタ" },
+    { hex:"#C8944A", label:"バーント" },
+    { hex:"#C8A85A", label:"ゴールド" },
+    { hex:"#5FAAB0", label:"ティール" },
+    { hex:"#7BAFD4", label:"スレートブルー" },
+    { hex:"#8F87C8", label:"ラベンダー" },
+    { hex:"#B87AAA", label:"モーブ" },
+    { hex:"#5FA88A", label:"セージ" },
+    { hex:"#9BAA72", label:"オリーブ" },
+    { hex:"#8A9BAA", label:"スモーク" },
+  ],
+  vivid: [
+    { hex:"#FF4444", label:"レッド" },
+    { hex:"#FF7A00", label:"オレンジ" },
+    { hex:"#FFCC00", label:"イエロー" },
+    { hex:"#00CC66", label:"グリーン" },
+    { hex:"#0099FF", label:"ブルー" },
+    { hex:"#7B4FFF", label:"バイオレット" },
+    { hex:"#FF3D9A", label:"ピンク" },
+    { hex:"#00CCCC", label:"シアン" },
+    { hex:"#FF6B35", label:"コーラル" },
+    { hex:"#333333", label:"チャコール" },
+  ],
+};
+
+const DEFAULT_TASK_CATS = [
+  { id:"morning",   name:"午前",         color:"#7BAFD4", emoji:"🌤" },
+  { id:"afternoon", name:"午後",         color:"#C8A85A", emoji:"☀️" },
+  { id:"work",      name:"仕事",         color:"#C0766A", emoji:"💼" },
+  { id:"private",   name:"プライベート", color:"#5FA88A", emoji:"🌿" },
+];
+
+const DEFAULT_CL_CATS = [
+  { id:"cl_morning", name:"朝の持ち物", color:"#7BAFD4", emoji:"🎒" },
+  { id:"cl_work",    name:"仕事グッズ", color:"#C0766A", emoji:"💻" },
+  { id:"cl_night",   name:"夜の準備",   color:"#8F87C8", emoji:"🌙" },
+];
+
+const DEFAULT_TASKS = [
+  { id:"t1", title:"メールチェック",   catId:"morning",   done:false, due:"", ts:1 },
+  { id:"t2", title:"企画書を仕上げる", catId:"work",      done:false, due:"", ts:2 },
+  { id:"t3", title:"ランチ予約",       catId:"afternoon", done:true,  due:"", ts:3 },
+  { id:"t4", title:"SNS投稿スケジュール確認", catId:"work", done:false, due:"", ts:4 },
+];
+
+const DEFAULT_CL = [
+  { id:"c1", title:"スマホ充電器", clCatId:"cl_morning", checked:false },
+  { id:"c2", title:"財布・カード", clCatId:"cl_morning", checked:false },
+  { id:"c3", title:"薬を飲む",     clCatId:"cl_morning", checked:true  },
+  { id:"c4", title:"PC・充電器",   clCatId:"cl_work",    checked:false },
+  { id:"c5", title:"手帳・ペン",   clCatId:"cl_work",    checked:false },
+  { id:"c6", title:"翌日の服を用意",clCatId:"cl_night",  checked:false },
+];
+
+const uid   = () => Math.random().toString(36).slice(2,9);
+const today = () => new Date().toISOString().slice(0,10);
+const fmtD  = d => { if(!d) return ""; const [,m,day]=d.split("-"); return `${+m}/${+day}`; };
+
+function mix(hex, pct=0.15) {
+  const n=parseInt(hex.slice(1),16);
+  const r=((n>>16)&255), g=((n>>8)&255), b=(n&255);
+  const mx=(c)=>Math.round(c+(255-c)*pct);
+  return `#${[mx(r),mx(g),mx(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}`;
+}
+
+function Sparkle({ color, x, y }) {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => { const t=setTimeout(()=>setVisible(false),600); return()=>clearTimeout(t); },[]);
+  if(!visible) return null;
+  return (
+    <div style={{ position:"fixed", left:x, top:y, pointerEvents:"none", zIndex:999 }}>
+      {["✦","·","✦","·","✦"].map((s,i)=>(
+        <span key={i} style={{
+          position:"absolute", fontSize: i%2===0 ? 12 : 7, color,
+          transform:`rotate(${i*72}deg) translateY(-${10+i*3}px)`,
+          opacity:0, animation:`sparkle-fly 0.6s ease-out ${i*0.05}s forwards`,
+        }}>{s}</span>
+      ))}
+      <style>{`@keyframes sparkle-fly{0%{opacity:1;transform:rotate(var(--r,0deg)) translateY(0)}100%{opacity:0;transform:rotate(var(--r,0deg)) translateY(-22px)}}`}</style>
+    </div>
+  );
+}
+
+function ColorPicker({ selected, onSelect }) {
+  const Row = ({ colors, label }) => (
+    <div style={{ marginBottom:10 }}>
+      <div style={{ fontSize:10, fontWeight:700, color:"#B0A8C8", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>{label}</div>
+      <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
+        {colors.map(c=>(
+          <button key={c.hex} onClick={()=>onSelect(c.hex)} title={c.label} style={{
+            width:28, height:28, borderRadius:"50%", background:c.hex,
+            border: selected===c.hex ? "3px solid #0F0E2A" : "3px solid transparent",
+            cursor:"pointer", outline:"none",
+            boxShadow: selected===c.hex ? "0 0 0 2px #fff, 0 0 0 4px "+c.hex : "none",
+            transition:"box-shadow 0.15s, transform 0.1s",
+            transform: selected===c.hex ? "scale(1.15)" : "scale(1)",
+          }}/>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ marginTop:8 }}>
+      <Row colors={PALETTE.muted} label="落ち着いた"/>
+      <div style={{ height:1, background:"#EDE8F8", margin:"4px 0 10px" }}/>
+      <Row colors={PALETTE.vivid} label="パキッとした"/>
+    </div>
+  );
+}
+
+const iS = {
+  width:"100%", padding:"10px 13px", borderRadius:12,
+  border:"2px solid #EEEAF4", fontSize:14, outline:"none",
+  boxSizing:"border-box", marginTop:5, color:"#0F0E2A",
+  fontFamily:"inherit", background:"#FAFAFA", transition:"border-color 0.15s",
+};
+const lS = { fontSize:11, fontWeight:800, color:"#B0A8C8", letterSpacing:1, marginTop:14, display:"block", textTransform:"uppercase" };
+const bP = (c="#7472A8")=>({ padding:"12px 20px", borderRadius:10, border:"none", background:c, color:"#fff", fontWeight:800, cursor:"pointer", fontSize:14, marginTop:18, width:"100%", fontFamily:"inherit", letterSpacing:0.5 });
+
+function Modal({ title, accent="#7c6ef4", onClose, children }) {
+  return (
+    <div style={{ position:"fixed", inset:0, background:"#0F0E2Acc", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", backdropFilter:"blur(4px)" }}
+      onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{ background:"#FFF8F0", borderRadius:24, padding:"26px 28px", minWidth:320, maxWidth:420, width:"90%", boxShadow:"0 20px 60px #0F0E2A44", borderTop:`4px solid ${accent}`, maxHeight:"90vh", overflowY:"auto" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <span style={{ fontSize:17, fontWeight:900, color:"#0F0E2A" }}>{title}</span>
+          <button onClick={onClose} style={{ background:"none", border:"none", fontSize:22, cursor:"pointer", color:"#C0B8D0", lineHeight:1 }}>×</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, isTask=true }) {
+  const done  = items.filter(i=>i.done??i.checked).length;
+  const total = items.length;
+  const allDone = total>0 && done===total;
+  const pct = total===0 ? 0 : Math.round(done/total*100);
+  return (
+    <div style={{ borderRadius:20, overflow:"hidden", marginBottom:16, boxShadow: allDone ? "0 1px 4px #0F0E2A08" : "0 2px 10px #0F0E2A0c", transition:"box-shadow 0.3s" }}>
+      <div style={{ background:`linear-gradient(100deg,${cat.color}cc,${mix(cat.color,0.5)}aa)`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8 }}>
+        <span style={{ fontSize:18 }}>{cat.emoji}</span>
+        <span style={{ fontWeight:900, fontSize:15, color:"#fff", flex:1, letterSpacing:0.3 }}>{cat.name}</span>
+        <div style={{ background: allDone ? "#fff" : "rgba(255,255,255,0.3)", borderRadius:20, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
+          <span style={{ fontSize:11, fontWeight:900, color: allDone ? cat.color : "#fff" }}>{allDone ? "✦ 完了" : `${done}/${total}`}</span>
+        </div>
+      </div>
+      {total>0 && (
+        <div style={{ height:3, background:"#F0ECF8" }}>
+          <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${cat.color},${mix(cat.color,-0.1)})`, transition:"width 0.4s cubic-bezier(.4,0,.2,1)" }}/>
+        </div>
+      )}
+      <div style={{ background:"#FFFCF8", padding:"8px 12px" }}>
+        {items.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>タスクなし — 右上の＋から追加</div>}
+        {items.map(item=>(
+          isTask
+            ? <TaskRow  key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} onEdit={onEditItem}/>
+            : <CheckRow key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem}/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TaskRow({ item, color, onToggle, onDelete, onEdit }) {
+  const [hov, setHov] = useState(false);
+  const ref = useRef(null);
+  const [sparks, setSparks] = useState([]);
+  const handleToggle = () => {
+    if(!item.done) { const r=ref.current?.getBoundingClientRect(); if(r) setSparks(s=>[...s,{id:uid(),x:r.left+r.width*0.15,y:r.top+r.height/2,color}]); }
+    onToggle(item.id);
+  };
+  return (
+    <div ref={ref} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 6px", borderBottom:"1px solid #F3EFF8", opacity:item.done?0.5:1, transition:"opacity 0.25s" }}>
+      {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
+      <button onClick={handleToggle} style={{ width:24, height:24, borderRadius:8, flexShrink:0, border:`2.5px solid ${color}`, background:item.done?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.done?"scale(1.1)":"scale(1)" }}>
+        {item.done && <span style={{ color:"#fff", fontSize:13, fontWeight:900, lineHeight:1 }}>✓</span>}
+      </button>
+      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none" }}>{item.title}</span>
+      {item.due && <span style={{ fontSize:11, fontWeight:700, color:item.due<today()?"#FF6B6B":"#B0A8C8", background:item.due<today()?"#FF6B6B18":"#F3EFF8", padding:"2px 7px", borderRadius:8 }}>📅{fmtD(item.due)}</span>}
+      {hov && (
+        <div style={{ display:"flex", gap:2 }}>
+          <button onClick={()=>onEdit(item)} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>編集</button>
+          <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>削除</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CheckRow({ item, color, onToggle, onDelete }) {
+  const [hov, setHov] = useState(false);
+  const ref = useRef(null);
+  const [sparks, setSparks] = useState([]);
+  const handleToggle = () => {
+    if(!item.checked) { const r=ref.current?.getBoundingClientRect(); if(r) setSparks(s=>[...s,{id:uid(),x:r.left+r.width*0.12,y:r.top+r.height/2,color}]); }
+    onToggle(item.id);
+  };
+  return (
+    <div ref={ref} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 6px", borderBottom:"1px solid #F3EFF8", opacity:item.checked?0.45:1, transition:"opacity 0.25s" }}>
+      {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
+      <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.checked?"scale(1.1)":"scale(1)" }}>
+        {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
+      </button>
+      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none" }}>{item.title}</span>
+      {hov && <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>削除</button>}
+    </div>
+  );
+}
+
+function CalendarView({ tasks, taskCats, onSelectDay }) {
+  const now = new Date();
+  const [yr, setYr] = useState(now.getFullYear());
+  const [mo, setMo] = useState(now.getMonth());
+  const todayKey = today();
+  const WD = ["日","月","火","水","木","金","土"];
+  const byDate = {};
+  tasks.forEach(t=>{ if(t.due){ if(!byDate[t.due]) byDate[t.due]=[]; byDate[t.due].push(t); }});
+  const days  = new Date(yr,mo+1,0).getDate();
+  const first = new Date(yr,mo,1).getDay();
+  const prev = ()=>{ if(mo===0){setYr(y=>y-1);setMo(11);}else setMo(m=>m-1); };
+  const next = ()=>{ if(mo===11){setYr(y=>y+1);setMo(0);}else setMo(m=>m+1); };
+  return (
+    <div style={{ background:"#FAFAF8", border:"1px solid #E4E2EA" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", borderBottom:"1px solid #E4E2EA" }}>
+        <button onClick={prev} style={{ background:"none",border:"1px solid #DDD9E8",width:30,height:30,cursor:"pointer",fontSize:16,color:"#7472A8",display:"flex",alignItems:"center",justifyContent:"center" }}>‹</button>
+        <span style={{ fontSize:14, fontWeight:700, color:"#2A2840", letterSpacing:2 }}>{yr} / {String(mo+1).padStart(2,"0")}</span>
+        <button onClick={next} style={{ background:"none",border:"1px solid #DDD9E8",width:30,height:30,cursor:"pointer",fontSize:16,color:"#7472A8",display:"flex",alignItems:"center",justifyContent:"center" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", borderBottom:"1px solid #E4E2EA" }}>
+        {WD.map((d,i)=>(
+          <div key={d} style={{ textAlign:"center", fontSize:10, fontWeight:700, padding:"7px 0", letterSpacing:1, color:i===0?"#C07070":i===6?"#7BAFD4":"#A09AB8", borderRight:i<6?"1px solid #E4E2EA":"none" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)" }}>
+        {Array.from({length:first}).map((_,i)=>(
+          <div key={`e${i}`} style={{ borderRight:"1px solid #E4E2EA", borderBottom:"1px solid #E4E2EA", minHeight:48 }}/>
+        ))}
+        {Array.from({length:days}).map((_,i)=>{
+          const d   = i+1;
+          const key = `${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+          const its = byDate[key]||[];
+          const isTo= key===todayKey;
+          const dow = (first+i)%7;
+          const isLastCol = (first+i)%7===6;
+          return (
+            <div key={d} onClick={()=>onSelectDay(key)}
+              onMouseEnter={e=>{ if(!isTo) e.currentTarget.style.background="#F0EEF8"; }}
+              onMouseLeave={e=>{ if(!isTo) e.currentTarget.style.background="transparent"; }}
+              style={{ minHeight:48, padding:"6px 4px", background:isTo?"#7472A818":"transparent", borderRight:isLastCol?"none":"1px solid #E4E2EA", borderBottom:"1px solid #E4E2EA", cursor:"pointer", transition:"background 0.1s", borderLeft:isTo?"2px solid #7472A8":"none" }}>
+              <div style={{ textAlign:"center", fontSize:12, fontWeight:isTo?800:400, color:isTo?"#7472A8":dow===0?"#C07070":dow===6?"#7BAFD4":"#2A2840" }}>{d}</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:2, justifyContent:"center", marginTop:3 }}>
+                {its.slice(0,4).map(t=>{ const c=taskCats.find(c=>c.id===t.catId); return <div key={t.id} style={{ width:5,height:5,background:c?.color||"#ccc" }}/>; })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ padding:"8px", textAlign:"center", fontSize:11, color:"#B0ACBF", borderTop:"1px solid #E4E2EA", letterSpacing:0.5 }}>日付をタップ → その日のタスクへ移動</div>
+    </div>
+  );
+}
+
+const NAV = [
+  { id:"tasks",     icon:"☑️",  label:"タスク"         },
+  { id:"checklist", icon:"🎒",  label:"チェックリスト"  },
+  { id:"calendar",  icon:"📅",  label:"カレンダー"      },
+  { id:"settings",  icon:"⚙️",  label:"設定"            },
+];
+
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+
+export default function App() {
+  const [tab, setTab]         = useState("tasks");
+  const [tasks, setTasks]     = useState(()=>load("tb_tasks",   DEFAULT_TASKS));
+  const [clItems, setClItems] = useState(()=>load("tb_clItems", DEFAULT_CL));
+  const [tCats, setTCats]     = useState(()=>load("tb_tCats",   DEFAULT_TASK_CATS));
+  const [cCats, setCCats]     = useState(()=>load("tb_cCats",   DEFAULT_CL_CATS));
+
+  useEffect(()=>{ localStorage.setItem("tb_tasks",   JSON.stringify(tasks));   }, [tasks]);
+  useEffect(()=>{ localStorage.setItem("tb_clItems", JSON.stringify(clItems)); }, [clItems]);
+  useEffect(()=>{ localStorage.setItem("tb_tCats",   JSON.stringify(tCats));   }, [tCats]);
+  useEffect(()=>{ localStorage.setItem("tb_cCats",   JSON.stringify(cCats));   }, [cCats]);
+  const [filterCat,  setFilterCat]  = useState("all");
+  const [filterDate, setFilterDate] = useState(null);
+  const [mAddTask, setMAddTask] = useState(false);
+  const [mAddCl,   setMAddCl]   = useState(false);
+  const [mAddTCat, setMAddTCat] = useState(false);
+  const [mAddCCat, setMAddCCat] = useState(false);
+  const [mEditT,   setMEditT]   = useState(null);
+  const [mEditCat, setMEditCat] = useState(null);
+  const [fTask,  setFTask]  = useState({ title:"", catId:tCats[0].id, due:"" });
+  const [fCl,    setFCl]    = useState({ title:"", clCatId:cCats[0].id });
+  const [fTCat,  setFTCat]  = useState({ name:"", color:PALETTE.muted[0].hex, emoji:"📌" });
+  const [fCCat,  setFCCat]  = useState({ name:"", color:PALETTE.muted[3].hex, emoji:"📦" });
+  const [fECat,  setFECat]  = useState({ name:"", color:"", emoji:"" });
+  const [editCatType, setEditCatType] = useState("task");
+  const [notifBanner, setNotifBanner] = useState(null);
+  const [notifPerm,   setNotifPerm]   = useState(typeof Notification !== "undefined" ? Notification.permission : "default");
+  const notifiedRef = useRef(false);
+
+  const toggleTask  = id => setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
+  const deleteTask  = id => setTasks(ts=>ts.filter(t=>t.id!==id));
+  const addTask = () => {
+    if(!fTask.title.trim()) return;
+    setTasks(ts=>[...ts,{id:uid(),title:fTask.title.trim(),catId:fTask.catId,done:false,due:fTask.due,ts:Date.now()}]);
+    setFTask({title:"",catId:tCats[0]?.id||"",due:""}); setMAddTask(false);
+  };
+  const saveEditTask = () => { setTasks(ts=>ts.map(t=>t.id===mEditT.id?mEditT:t)); setMEditT(null); };
+  const toggleCl = id => setClItems(cs=>cs.map(c=>c.id===id?{...c,checked:!c.checked}:c));
+  const deleteCl = id => setClItems(cs=>cs.filter(c=>c.id!==id));
+  const addCl = () => {
+    if(!fCl.title.trim()) return;
+    setClItems(cs=>[...cs,{id:uid(),title:fCl.title.trim(),clCatId:fCl.clCatId,checked:false}]);
+    setFCl({title:"",clCatId:cCats[0]?.id||""}); setMAddCl(false);
+  };
+  const addTCat = () => { if(!fTCat.name.trim()) return; setTCats(cs=>[...cs,{id:uid(),...fTCat}]); setFTCat({name:"",color:PALETTE.muted[0].hex,emoji:"📌"}); setMAddTCat(false); };
+  const addCCat = () => { if(!fCCat.name.trim()) return; setCCats(cs=>[...cs,{id:uid(),...fCCat}]); setFCCat({name:"",color:PALETTE.muted[3].hex,emoji:"📦"}); setMAddCCat(false); };
+  const openEditCat  = (cat, type="task") => { setMEditCat(cat); setFECat({name:cat.name,color:cat.color,emoji:cat.emoji}); setEditCatType(type); };
+  const saveEditCat  = () => {
+    if(editCatType==="task") setTCats(cs=>cs.map(c=>c.id===mEditCat.id?{...c,...fECat}:c));
+    else                     setCCats(cs=>cs.map(c=>c.id===mEditCat.id?{...c,...fECat}:c));
+    setMEditCat(null);
+  };
+  const jumpToDay = key => { setFilterDate(key); setFilterCat("all"); setTab("tasks"); };
+  const clearDateFilter = () => setFilterDate(null);
+
+  useEffect(() => {
+    if(notifiedRef.current) return;
+    const todayKey = today();
+    const dueTasks = tasks.filter(t => !t.done && t.due === todayKey);
+    if(dueTasks.length === 0) return;
+    notifiedRef.current = true;
+    setNotifBanner(dueTasks);
+    if(typeof Notification === "undefined") return;
+    if(Notification.permission === "granted") {
+      dueTasks.forEach(t => new Notification("Today's Brain 🧠", { body:`今日が期限：${t.title}`, icon:"https://fav.farm/🧠" }));
+    } else if(Notification.permission === "default") {
+      Notification.requestPermission().then(perm => {
+        setNotifPerm(perm);
+        if(perm === "granted") dueTasks.forEach(t => new Notification("Today's Brain 🧠", { body:`今日が期限：${t.title}`, icon:"https://fav.farm/🧠" }));
+      });
+    }
+  }, [tasks]);
+
+  const visibleCats = filterCat==="all" ? tCats : tCats.filter(c=>c.id===filterCat);
+  const now = new Date();
+  const hdr = filterDate ? `${+filterDate.split("-")[1]}月${+filterDate.split("-")[2]}日 📅` : `${now.getMonth()+1}月${now.getDate()}日 🧠`;
+  const totalTasks = tasks.filter(t=>!t.done).length;
+
+  return (
+    <div style={{ minHeight:"100vh", background:"linear-gradient(160deg,#F4F3F8 0%,#FAFAF8 60%,#F3F6F9 100%)", fontFamily:"'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif", display:"flex", justifyContent:"center" }}>
+      <div style={{ width:"100%", maxWidth:480, minHeight:"100vh", display:"flex", flexDirection:"column", position:"relative" }}>
+
+        {/* HEADER */}
+        <div style={{ background:"rgba(252,252,250,0.95)", backdropFilter:"blur(12px)", padding:"16px 20px 12px", borderBottom:"1px solid #E8E6EC", position:"sticky", top:0, zIndex:50 }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+            <div>
+              <div style={{ fontSize:10, fontWeight:900, color:"#B0A8C8", letterSpacing:3, textTransform:"uppercase" }}>Today's Brain</div>
+              <div style={{ fontSize:24, fontWeight:900, color:"#0F0E2A", marginTop:2, lineHeight:1.1 }}>{hdr}</div>
+              {tab==="tasks" && totalTasks>0 && <div style={{ fontSize:12, color:"#9B8FC8", marginTop:3, fontWeight:700 }}>残り {totalTasks} 件 — ファイト！</div>}
+              {tab==="tasks" && totalTasks===0 && tasks.length>0 && <div style={{ fontSize:12, color:"#55EFC4", marginTop:3, fontWeight:700 }}>✦ 全部終わった！最高！</div>}
+            </div>
+            <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+              {filterDate && <button onClick={clearDateFilter} style={{ padding:"6px 11px", borderRadius:20, border:"none", background:"#F3EFF8", color:"#9B8FC8", fontWeight:800, fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>✕ 今日</button>}
+              {tab==="tasks" && <button onClick={()=>{ const preselect=filterCat!=="all"?filterCat:tCats[0]?.id||""; setFTask({title:"",catId:preselect,due:""}); setMAddTask(true); }} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#7472A8", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #7472A820" }}>＋ タスク</button>}
+              {tab==="checklist" && <button onClick={()=>setMAddCl(true)} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#C8944A", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #C8944A20" }}>＋ 追加</button>}
+            </div>
+          </div>
+          {tab==="tasks" && (
+            <div style={{ display:"flex", gap:6, marginTop:12, overflowX:"auto", paddingBottom:2 }}>
+              {[{id:"all",name:"すべて",color:"#0F0E2A",emoji:""},...tCats].map(c=>(
+                <button key={c.id} onClick={()=>setFilterCat(c.id)} style={{ padding:"5px 13px", borderRadius:20, border:"none", fontSize:12, fontWeight:800, background:filterCat===c.id?(c.id==="all"?"#3A384A":c.color):(c.id==="all"?"#ECEAF2":c.color+"28"), color:filterCat===c.id?"#fff":(c.id==="all"?"#7472A8":c.color), cursor:"pointer", whiteSpace:"nowrap", fontFamily:"inherit", transition:"background 0.15s, color 0.15s" }}>{c.emoji} {c.name}</button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 期限バナー */}
+        {notifBanner && (
+          <div style={{ background:"linear-gradient(135deg,#FF6B6B,#FF9F43)", padding:"10px 16px", display:"flex", alignItems:"flex-start", gap:10 }}>
+            <span style={{ fontSize:20, flexShrink:0 }}>⏰</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:12, fontWeight:900, color:"#fff", marginBottom:3 }}>今日が期限のタスクがあります</div>
+              {notifBanner.map(t => {
+                const cat = tCats.find(c=>c.id===t.catId);
+                return <div key={t.id} onClick={()=>{ setFilterDate(today()); setFilterCat("all"); setTab("tasks"); setNotifBanner(null); }} style={{ fontSize:13, color:"#fff", fontWeight:700, opacity:0.95, display:"flex", alignItems:"center", gap:5, marginTop:2, cursor:"pointer" }}><span style={{ fontSize:14 }}>{cat?.emoji}</span><span style={{ textDecoration:"underline" }}>{t.title}</span></div>;
+              })}
+            </div>
+            <button onClick={()=>setNotifBanner(null)} style={{ background:"rgba(255,255,255,0.25)", border:"none", borderRadius:8, color:"#fff", fontWeight:900, fontSize:11, padding:"4px 10px", cursor:"pointer", flexShrink:0, fontFamily:"inherit", letterSpacing:0.5 }}>閉じる</button>
+          </div>
+        )}
+
+        {/* CONTENT */}
+        <div style={{ flex:1, padding:"16px 14px 88px", overflowY:"auto" }}>
+          {tab==="tasks" && (
+            <div>
+              {filterDate && <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:10, fontWeight:700 }}>📅 {filterDate.split("-").slice(1).map(Number).join("/")} の期限タスク</div>}
+              {visibleCats.map(cat=>{
+                const items = tasks.filter(t=>t.catId===cat.id).filter(t=>!filterDate||t.due===filterDate).sort((a,b)=>a.done-b.done||a.ts-b.ts);
+                if(filterDate && items.length===0) return null;
+                return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT}/>;
+              })}
+              {filterDate && tasks.filter(t=>t.due===filterDate).length===0 && (
+                <div style={{ textAlign:"center", padding:"60px 0", color:"#C0B8CC" }}>
+                  <div style={{ fontSize:40 }}>🗓</div>
+                  <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>この日のタスクはありません</div>
+                </div>
+              )}
+            </div>
+          )}
+          {tab==="checklist" && (
+            <div>
+              <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:14, fontWeight:700 }}>毎日リセット — カテゴリ別に確認 ✦</div>
+              {cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl}/>; })}
+              <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>＋ カテゴリを追加</button>
+            </div>
+          )}
+          {tab==="calendar" && <div style={{ border:"1px solid #E4E2EA" }}><CalendarView tasks={tasks} taskCats={tCats} onSelectDay={jumpToDay}/></div>}
+          {tab==="settings" && (
+            <div>
+              <SectionHead>通知設定</SectionHead>
+              <div style={{ background:"#FFFCF8", borderRadius:14, padding:"12px 16px", marginBottom:20, boxShadow:"0 1px 4px #0F0E2A0a", display:"flex", alignItems:"center", gap:12 }}>
+                <span style={{ fontSize:24 }}>🔔</span>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:800, color:"#0F0E2A" }}>期限タスクの通知</div>
+                  <div style={{ fontSize:11, color:"#B0A8C8", marginTop:2 }}>{notifPerm==="granted"?"✦ 通知が有効です":notifPerm==="denied"?"🚫 ブラウザ設定から許可してください":"アプリ起動時に期限タスクをお知らせします"}</div>
+                </div>
+                {notifPerm==="default" && <button onClick={()=>{ Notification.requestPermission().then(p=>setNotifPerm(p)); }} style={{ padding:"7px 14px", borderRadius:20, border:"none", background:"linear-gradient(135deg,#7c6ef4,#A29BFE)", color:"#fff", fontWeight:800, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>許可する</button>}
+                {notifPerm==="granted" && <span style={{ fontSize:20 }}>✅</span>}
+              </div>
+              <SectionHead>タスクカテゴリ</SectionHead>
+              <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>行をドラッグして順番を変更できます</span></div>
+              <SortableCatList cats={tCats} onReorder={setTCats} onEdit={openEditCat} onDelete={id=>setTCats(cs=>cs.filter(c=>c.id!==id))}/>
+              <DashedAdd onClick={()=>setMAddTCat(true)} label="＋ カテゴリを追加"/>
+              <SectionHead style={{marginTop:24}}>チェックリストカテゴリ</SectionHead>
+              <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>行をドラッグして順番を変更できます</span></div>
+              <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))}/>
+              <DashedAdd onClick={()=>setMAddCCat(true)} label="＋ カテゴリを追加"/>
+            </div>
+          )}
+        </div>
+
+        {/* BOTTOM NAV */}
+        <div style={{ position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:480, background:"rgba(255,252,248,0.95)", borderTop:"1px solid #EDE8F8", display:"flex", zIndex:50, backdropFilter:"blur(12px)", paddingBottom:"env(safe-area-inset-bottom,0px)" }}>
+          {NAV.map(n=>{ const active=tab===n.id; return (
+            <button key={n.id} onClick={()=>setTab(n.id)} style={{ flex:1, padding:"11px 0 8px", border:"none", background:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:1 }}>
+              <span style={{ fontSize:22, filter:active?"none":"grayscale(0.4) opacity(0.6)" }}>{n.icon}</span>
+              <span style={{ fontSize:9, fontWeight:active?900:600, color:active?"#7472A8":"#C0B8CC", letterSpacing:0.5 }}>{n.label}</span>
+              {active && <div style={{ width:22, height:3, borderRadius:3, background:"#7472A8", marginTop:2 }}/>}
+            </button>
+          ); })}
+        </div>
+      </div>
+
+      {/* MODALS */}
+      {mAddTask && (()=>{
+        const lockedCat = filterCat!=="all" ? tCats.find(c=>c.id===filterCat) : null;
+        const accent = lockedCat ? lockedCat.color : "#7c6ef4";
+        return (
+          <Modal title={lockedCat ? lockedCat.emoji+" "+lockedCat.name+"に追加" : "新しいタスク"} accent={accent} onClose={()=>setMAddTask(false)}>
+            <label style={lS}>タスク名</label>
+            <input style={iS} placeholder="例: メールチェック" value={fTask.title} onChange={e=>setFTask(v=>({...v,title:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addTask()} autoFocus/>
+            {lockedCat ? (
+              <div style={{ marginTop:14, display:"flex", alignItems:"center", gap:8, padding:"8px 12px", borderRadius:12, background:lockedCat.color+"15" }}>
+                <div style={{ width:10, height:10, borderRadius:"50%", background:lockedCat.color }}/>
+                <span style={{ fontSize:13, fontWeight:800, color:lockedCat.color }}>{lockedCat.emoji} {lockedCat.name}</span>
+                <span style={{ fontSize:11, color:"#C0B8CC", marginLeft:2 }}>（自動セット）</span>
+              </div>
+            ) : (
+              <><label style={lS}>カテゴリ</label><select style={iS} value={fTask.catId} onChange={e=>setFTask(v=>({...v,catId:e.target.value}))}>{tCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select></>
+            )}
+            <label style={lS}>期限（任意）</label>
+            <input style={iS} type="date" value={fTask.due} onChange={e=>setFTask(v=>({...v,due:e.target.value}))}/>
+            <button onClick={addTask} style={bP(accent)}>追加する</button>
+          </Modal>
+        );
+      })()}
+      {mEditT && (
+        <Modal title="タスクを編集" accent="#48CAE4" onClose={()=>setMEditT(null)}>
+          <label style={lS}>タスク名</label>
+          <input style={iS} value={mEditT.title} onChange={e=>setMEditT(v=>({...v,title:e.target.value}))} autoFocus/>
+          <label style={lS}>カテゴリ</label>
+          <select style={iS} value={mEditT.catId} onChange={e=>setMEditT(v=>({...v,catId:e.target.value}))}>{tCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select>
+          <label style={lS}>期限</label>
+          <input style={iS} type="date" value={mEditT.due||""} onChange={e=>setMEditT(v=>({...v,due:e.target.value}))}/>
+          <button onClick={saveEditTask} style={bP("#48CAE4")}>保存する</button>
+        </Modal>
+      )}
+      {mAddCl && (
+        <Modal title="チェック項目を追加" accent="#FF9F43" onClose={()=>setMAddCl(false)}>
+          <label style={lS}>項目名</label>
+          <input style={iS} placeholder="例: 財布を確認" value={fCl.title} onChange={e=>setFCl(v=>({...v,title:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addCl()} autoFocus/>
+          <label style={lS}>カテゴリ</label>
+          <select style={iS} value={fCl.clCatId} onChange={e=>setFCl(v=>({...v,clCatId:e.target.value}))}>{cCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select>
+          <button onClick={addCl} style={bP("#FF9F43")}>追加する</button>
+        </Modal>
+      )}
+      {mAddTCat && (
+        <Modal title="タスクカテゴリを追加" accent="#7c6ef4" onClose={()=>setMAddTCat(false)}>
+          <label style={lS}>カテゴリ名</label>
+          <input style={iS} placeholder="例: 勉強" value={fTCat.name} onChange={e=>setFTCat(v=>({...v,name:e.target.value}))} autoFocus/>
+          <label style={lS}>絵文字</label>
+          <input style={iS} placeholder="例: 📚" value={fTCat.emoji} onChange={e=>setFTCat(v=>({...v,emoji:e.target.value}))}/>
+          <label style={lS}>カラー</label>
+          <ColorPicker selected={fTCat.color} onSelect={c=>setFTCat(v=>({...v,color:c}))}/>
+          <button onClick={addTCat} style={bP(fTCat.color)}>追加する</button>
+        </Modal>
+      )}
+      {mAddCCat && (
+        <Modal title="チェックリストカテゴリを追加" accent="#FF9F43" onClose={()=>setMAddCCat(false)}>
+          <label style={lS}>カテゴリ名</label>
+          <input style={iS} placeholder="例: 外出グッズ" value={fCCat.name} onChange={e=>setFCCat(v=>({...v,name:e.target.value}))} autoFocus/>
+          <label style={lS}>絵文字</label>
+          <input style={iS} placeholder="例: 🎒" value={fCCat.emoji} onChange={e=>setFCCat(v=>({...v,emoji:e.target.value}))}/>
+          <label style={lS}>カラー</label>
+          <ColorPicker selected={fCCat.color} onSelect={c=>setFCCat(v=>({...v,color:c}))}/>
+          <button onClick={addCCat} style={bP(fCCat.color)}>追加する</button>
+        </Modal>
+      )}
+      {mEditCat && (
+        <Modal title="カテゴリを編集" accent={fECat.color} onClose={()=>setMEditCat(null)}>
+          <label style={lS}>カテゴリ名</label>
+          <input style={iS} value={fECat.name} onChange={e=>setFECat(v=>({...v,name:e.target.value}))} autoFocus/>
+          <label style={lS}>絵文字</label>
+          <input style={iS} value={fECat.emoji} onChange={e=>setFECat(v=>({...v,emoji:e.target.value}))}/>
+          <label style={lS}>カラー</label>
+          <ColorPicker selected={fECat.color} onSelect={c=>setFECat(v=>({...v,color:c}))}/>
+          <button onClick={saveEditCat} style={bP(fECat.color)}>保存する</button>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function SortableCatList({ cats, onReorder, onEdit, onDelete }) {
+  const [dragIdx, setDragIdx] = useState(null);
+  const [overIdx, setOverIdx] = useState(null);
+  const state    = useRef({ dragIdx:null, overIdx:null, cats:[] });
+  const itemRefs = useRef([]);
+  const gripRefs = useRef([]);
+  state.current.cats = cats;
+
+  useEffect(() => {
+    const handlers = [];
+    gripRefs.current.forEach((el, i) => {
+      if (!el) return;
+      const onTouchStart = () => { state.current.dragIdx=i; setDragIdx(i); };
+      const onTouchMove = (e) => {
+        e.preventDefault();
+        const y = e.touches[0].clientY;
+        let found = null;
+        itemRefs.current.forEach((row, j) => { if(!row) return; const r=row.getBoundingClientRect(); if(y>=r.top&&y<=r.bottom) found=j; });
+        if(found!==null&&found!==state.current.dragIdx) { state.current.overIdx=found; setOverIdx(found); }
+      };
+      const onTouchEnd = () => {
+        const from=state.current.dragIdx, to=state.current.overIdx;
+        if(from!==null&&to!==null&&from!==to) { const next=[...state.current.cats]; const [moved]=next.splice(from,1); next.splice(to,0,moved); onReorder(next); }
+        state.current.dragIdx=null; state.current.overIdx=null; setDragIdx(null); setOverIdx(null);
+      };
+      el.addEventListener("touchstart",  onTouchStart, { passive:true  });
+      el.addEventListener("touchmove",   onTouchMove,  { passive:false });
+      el.addEventListener("touchend",    onTouchEnd,   { passive:true  });
+      handlers.push({ el, onTouchStart, onTouchMove, onTouchEnd });
+    });
+    return () => { handlers.forEach(({ el, onTouchStart, onTouchMove, onTouchEnd }) => { el.removeEventListener("touchstart",onTouchStart); el.removeEventListener("touchmove",onTouchMove); el.removeEventListener("touchend",onTouchEnd); }); };
+  }, [cats.length]);
+
+  const onDragStart = (e, i) => { e.dataTransfer.effectAllowed="move"; setDragIdx(i); state.current.dragIdx=i; };
+  const onDragOver  = (e, i) => { e.preventDefault(); if(i!==state.current.dragIdx){ setOverIdx(i); state.current.overIdx=i; }};
+  const onDrop      = (e, i) => { e.preventDefault(); const from=state.current.dragIdx; if(from===null||from===i) return; const next=[...cats]; const [m]=next.splice(from,1); next.splice(i,0,m); onReorder(next); setDragIdx(null); setOverIdx(null); };
+  const onDragEnd   = () => { setDragIdx(null); setOverIdx(null); state.current.dragIdx=null; state.current.overIdx=null; };
+
+  return (
+    <div>
+      {cats.map((cat, i) => (
+        <div key={cat.id} ref={el => itemRefs.current[i] = el}>
+          <div style={{ height:overIdx===i&&dragIdx!==null&&dragIdx!==i?3:0, borderRadius:2, background:"#7472A8", marginBottom:overIdx===i&&dragIdx!==null&&dragIdx!==i?5:0, transition:"height 0.1s", overflow:"hidden" }}/>
+          <SettingRow cat={cat} isDragging={dragIdx===i} isOver={overIdx===i&&dragIdx!==i} gripRef={el=>gripRefs.current[i]=el} onEdit={()=>onEdit(cat)} onDelete={()=>onDelete(cat.id)} onDragStart={e=>onDragStart(e,i)} onDragOver={e=>onDragOver(e,i)} onDrop={e=>onDrop(e,i)} onDragEnd={onDragEnd}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SectionHead({ children, style={} }) {
+  return <div style={{ fontWeight:900, fontSize:14, color:"#0F0E2A", marginBottom:10, ...style }}>{children}</div>;
+}
+function SettingRow({ cat, onEdit, onDelete, onDragStart, onDragOver, onDrop, onDragEnd, gripRef, isDragging, isOver }) {
+  return (
+    <div onDragOver={onDragOver} onDrop={onDrop} style={{ display:"flex", alignItems:"center", gap:10, background:isOver?"#F0ECFF":"#FFFCF8", padding:"10px 14px", borderRadius:14, marginBottom:8, borderLeft:`4px solid ${cat.color}`, boxShadow:isDragging?"0 8px 24px #0F0E2A22":"0 1px 4px #0F0E2A0a", opacity:isDragging?0.35:1, transform:isDragging?"scale(1.03) rotate(1deg)":"scale(1)", transition:"box-shadow 0.15s, opacity 0.15s, transform 0.15s, background 0.1s", userSelect:"none" }}>
+      <span ref={gripRef} draggable onDragStart={onDragStart} onDragEnd={onDragEnd} style={{ display:"flex", flexDirection:"column", gap:3, padding:"6px 8px", flexShrink:0, cursor:isDragging?"grabbing":"grab", touchAction:"none", borderRadius:6, background:isDragging?"#EDE8F8":"transparent" }}>
+        {[0,1,2].map(r=><span key={r} style={{ display:"flex", gap:3 }}><span style={{ width:3,height:3,borderRadius:"50%",background:"#B0A8C8",display:"inline-block" }}/><span style={{ width:3,height:3,borderRadius:"50%",background:"#B0A8C8",display:"inline-block" }}/></span>)}
+      </span>
+      <span style={{ fontSize:18 }}>{cat.emoji}</span>
+      <div style={{ width:12,height:12,borderRadius:"50%",background:cat.color,flexShrink:0 }}/>
+      <span style={{ flex:1,fontSize:14,fontWeight:700,color:"#0F0E2A" }}>{cat.name}</span>
+      <button onClick={e=>{ e.stopPropagation(); onEdit(); }} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>編集</button>
+      <button onClick={e=>{ e.stopPropagation(); onDelete(); }} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>削除</button>
+    </div>
+  );
+}
+function DashedAdd({ onClick, label }) {
+  return <button onClick={onClick} style={{ width:"100%", padding:"11px", borderRadius:14, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13, marginTop:4 }}>{label}</button>;
+}
