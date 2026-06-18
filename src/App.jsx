@@ -2,29 +2,156 @@ import { useState, useEffect, useRef } from "react";
 
 const PALETTE = {
   muted: [
-    { hex:"#C0766A", label:"テラコッタ" },
-    { hex:"#C8944A", label:"バーント" },
-    { hex:"#C8A85A", label:"ゴールド" },
-    { hex:"#5FAAB0", label:"ティール" },
-    { hex:"#7BAFD4", label:"スレートブルー" },
-    { hex:"#8F87C8", label:"ラベンダー" },
-    { hex:"#B87AAA", label:"モーブ" },
-    { hex:"#5FA88A", label:"セージ" },
-    { hex:"#9BAA72", label:"オリーブ" },
-    { hex:"#8A9BAA", label:"スモーク" },
+    { hex:"#C0766A", label:"Terracotta" },
+    { hex:"#C8944A", label:"Burnt" },
+    { hex:"#C8A85A", label:"Gold" },
+    { hex:"#5FAAB0", label:"Teal" },
+    { hex:"#7BAFD4", label:"Slate Blue" },
+    { hex:"#8F87C8", label:"Lavender" },
+    { hex:"#B87AAA", label:"Mauve" },
+    { hex:"#5FA88A", label:"Sage" },
+    { hex:"#9BAA72", label:"Olive" },
+    { hex:"#8A9BAA", label:"Smoke" },
   ],
   vivid: [
-    { hex:"#FF4444", label:"レッド" },
-    { hex:"#FF7A00", label:"オレンジ" },
-    { hex:"#FFCC00", label:"イエロー" },
-    { hex:"#00CC66", label:"グリーン" },
-    { hex:"#0099FF", label:"ブルー" },
-    { hex:"#7B4FFF", label:"バイオレット" },
-    { hex:"#FF3D9A", label:"ピンク" },
-    { hex:"#00CCCC", label:"シアン" },
-    { hex:"#FF6B35", label:"コーラル" },
-    { hex:"#333333", label:"チャコール" },
+    { hex:"#FF4444", label:"Red" },
+    { hex:"#FF7A00", label:"Orange" },
+    { hex:"#FFCC00", label:"Yellow" },
+    { hex:"#00CC66", label:"Green" },
+    { hex:"#0099FF", label:"Blue" },
+    { hex:"#7B4FFF", label:"Violet" },
+    { hex:"#FF3D9A", label:"Pink" },
+    { hex:"#00CCCC", label:"Cyan" },
+    { hex:"#FF6B35", label:"Coral" },
+    { hex:"#333333", label:"Charcoal" },
   ],
+};
+
+const TRANSLATIONS = {
+  ja: {
+    nav_tasks: "タスク",
+    nav_checklist: "チェックリスト",
+    nav_calendar: "カレンダー",
+    nav_settings: "設定",
+    tasks_left: n => `残り ${n} 件 — ファイト！`,
+    all_done: "✦ 全部終わった！最高！",
+    btn_add_task: "＋ タスク",
+    btn_add: "＋ 追加",
+    btn_today: "✕ 今日",
+    filter_all: "すべて",
+    badge_done: "✦ 完了",
+    no_tasks: "タスクなし — 右上の＋から追加",
+    weekdays: ["日","月","火","水","木","金","土"],
+    cal_footer: "日付をタップ → その日のタスクへ移動",
+    cl_subtitle: "毎日リセット — カテゴリ別に確認 ✦",
+    sec_lang: "言語 / Language",
+    sec_notif: "通知設定",
+    sec_task_cats: "タスクカテゴリ",
+    sec_cl_cats: "チェックリストカテゴリ",
+    drag_hint: "行をドラッグして順番を変更できます",
+    notif_title: "期限タスクの通知",
+    notif_granted: "✦ 通知が有効です",
+    notif_denied: "🚫 ブラウザ設定から許可してください",
+    notif_default: "アプリ起動時に期限タスクをお知らせします",
+    btn_allow: "許可する",
+    modal_add_task: "新しいタスク",
+    modal_edit_task: "タスクを編集",
+    modal_add_cl: "チェック項目を追加",
+    modal_add_tcat: "タスクカテゴリを追加",
+    modal_add_ccat: "チェックリストカテゴリを追加",
+    modal_edit_cat: "カテゴリを編集",
+    modal_locked_cat: (emoji, name) => `${emoji} ${name}に追加`,
+    lbl_task_name: "タスク名",
+    lbl_category: "カテゴリ",
+    lbl_due: "期限（任意）",
+    lbl_item_name: "項目名",
+    lbl_cat_name: "カテゴリ名",
+    lbl_emoji: "絵文字",
+    lbl_color: "カラー",
+    btn_add_item: "追加する",
+    btn_save: "保存する",
+    btn_close: "閉じる",
+    btn_edit: "編集",
+    btn_delete: "削除",
+    auto_set: "（自動セット）",
+    ph_task: "例: メールチェック",
+    ph_item: "例: 財布を確認",
+    ph_cat: "例: 勉強",
+    ph_emoji_task: "例: 📚",
+    ph_ccat: "例: 外出グッズ",
+    ph_emoji_ccat: "例: 🎒",
+    color_muted: "落ち着いた",
+    color_vivid: "パキッとした",
+    filter_date_label: (m, d) => `📅 ${m}/${d} の期限タスク`,
+    no_tasks_day: "この日のタスクはありません",
+    notif_banner_title: "今日が期限のタスクがあります",
+    notif_banner_body: t => `今日が期限：${t}`,
+    add_cat: "＋ カテゴリを追加",
+    fmt_header: (m, d) => `${m}月${d}日 🧠`,
+    fmt_filter_hdr: (m, d) => `${m}月${d}日 📅`,
+  },
+  en: {
+    nav_tasks: "Tasks",
+    nav_checklist: "Checklist",
+    nav_calendar: "Calendar",
+    nav_settings: "Settings",
+    tasks_left: n => `${n} left — you got this!`,
+    all_done: "✦ All done! Amazing!",
+    btn_add_task: "+ Task",
+    btn_add: "+ Add",
+    btn_today: "✕ Today",
+    filter_all: "All",
+    badge_done: "✦ Done",
+    no_tasks: "No tasks — tap + to add",
+    weekdays: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
+    cal_footer: "Tap a date → jump to that day's tasks",
+    cl_subtitle: "Daily reset — check by category ✦",
+    sec_lang: "言語 / Language",
+    sec_notif: "Notifications",
+    sec_task_cats: "Task Categories",
+    sec_cl_cats: "Checklist Categories",
+    drag_hint: "Drag rows to reorder",
+    notif_title: "Due task alerts",
+    notif_granted: "✦ Notifications enabled",
+    notif_denied: "🚫 Enable in browser settings",
+    notif_default: "You'll be alerted about due tasks on launch",
+    btn_allow: "Allow",
+    modal_add_task: "New Task",
+    modal_edit_task: "Edit Task",
+    modal_add_cl: "Add Checklist Item",
+    modal_add_tcat: "Add Task Category",
+    modal_add_ccat: "Add Checklist Category",
+    modal_edit_cat: "Edit Category",
+    modal_locked_cat: (emoji, name) => `Add to ${emoji} ${name}`,
+    lbl_task_name: "Task name",
+    lbl_category: "Category",
+    lbl_due: "Due date (optional)",
+    lbl_item_name: "Item name",
+    lbl_cat_name: "Category name",
+    lbl_emoji: "Emoji",
+    lbl_color: "Color",
+    btn_add_item: "Add",
+    btn_save: "Save",
+    btn_close: "Close",
+    btn_edit: "Edit",
+    btn_delete: "Delete",
+    auto_set: "(auto-set)",
+    ph_task: "e.g. Check emails",
+    ph_item: "e.g. Check wallet",
+    ph_cat: "e.g. Study",
+    ph_emoji_task: "e.g. 📚",
+    ph_ccat: "e.g. Going out",
+    ph_emoji_ccat: "e.g. 🎒",
+    color_muted: "Muted",
+    color_vivid: "Vivid",
+    filter_date_label: (m, d) => `📅 ${m}/${d} due tasks`,
+    no_tasks_day: "No tasks for this day",
+    notif_banner_title: "Tasks due today",
+    notif_banner_body: t => `Due today: ${t}`,
+    add_cat: "+ Add Category",
+    fmt_header: (m, d) => `${m}/${d} 🧠`,
+    fmt_filter_hdr: (m, d) => `${m}/${d} 📅`,
+  },
 };
 
 const DEFAULT_TASK_CATS = [
@@ -85,7 +212,7 @@ function Sparkle({ color, x, y }) {
   );
 }
 
-function ColorPicker({ selected, onSelect }) {
+function ColorPicker({ selected, onSelect, t }) {
   const Row = ({ colors, label }) => (
     <div style={{ marginBottom:10 }}>
       <div style={{ fontSize:10, fontWeight:700, color:"#B0A8C8", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>{label}</div>
@@ -105,9 +232,9 @@ function ColorPicker({ selected, onSelect }) {
   );
   return (
     <div style={{ marginTop:8 }}>
-      <Row colors={PALETTE.muted} label="落ち着いた"/>
+      <Row colors={PALETTE.muted} label={t("color_muted")}/>
       <div style={{ height:1, background:"#EDE8F8", margin:"4px 0 10px" }}/>
-      <Row colors={PALETTE.vivid} label="パキッとした"/>
+      <Row colors={PALETTE.vivid} label={t("color_vivid")}/>
     </div>
   );
 }
@@ -136,7 +263,7 @@ function Modal({ title, accent="#7c6ef4", onClose, children }) {
   );
 }
 
-function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, isTask=true }) {
+function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, isTask=true, t }) {
   const done  = items.filter(i=>i.done??i.checked).length;
   const total = items.length;
   const allDone = total>0 && done===total;
@@ -147,7 +274,7 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, isTa
         <span style={{ fontSize:18 }}>{cat.emoji}</span>
         <span style={{ fontWeight:900, fontSize:15, color:"#fff", flex:1, letterSpacing:0.3 }}>{cat.name}</span>
         <div style={{ background: allDone ? "#fff" : "rgba(255,255,255,0.3)", borderRadius:20, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
-          <span style={{ fontSize:11, fontWeight:900, color: allDone ? cat.color : "#fff" }}>{allDone ? "✦ 完了" : `${done}/${total}`}</span>
+          <span style={{ fontSize:11, fontWeight:900, color: allDone ? cat.color : "#fff" }}>{allDone ? t("badge_done") : `${done}/${total}`}</span>
         </div>
       </div>
       {total>0 && (
@@ -156,18 +283,18 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, isTa
         </div>
       )}
       <div style={{ background:"#FFFCF8", padding:"8px 12px" }}>
-        {items.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>タスクなし — 右上の＋から追加</div>}
+        {items.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>{t("no_tasks")}</div>}
         {items.map(item=>(
           isTask
-            ? <TaskRow  key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} onEdit={onEditItem}/>
-            : <CheckRow key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem}/>
+            ? <TaskRow  key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} onEdit={onEditItem} t={t}/>
+            : <CheckRow key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} t={t}/>
         ))}
       </div>
     </div>
   );
 }
 
-function TaskRow({ item, color, onToggle, onDelete, onEdit }) {
+function TaskRow({ item, color, onToggle, onDelete, onEdit, t }) {
   const [hov, setHov] = useState(false);
   const ref = useRef(null);
   const [sparks, setSparks] = useState([]);
@@ -186,15 +313,15 @@ function TaskRow({ item, color, onToggle, onDelete, onEdit }) {
       {item.due && <span style={{ fontSize:11, fontWeight:700, color:item.due<today()?"#FF6B6B":"#B0A8C8", background:item.due<today()?"#FF6B6B18":"#F3EFF8", padding:"2px 7px", borderRadius:8 }}>📅{fmtD(item.due)}</span>}
       {hov && (
         <div style={{ display:"flex", gap:2 }}>
-          <button onClick={()=>onEdit(item)} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>編集</button>
-          <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>削除</button>
+          <button onClick={()=>onEdit(item)} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>{t("btn_edit")}</button>
+          <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
         </div>
       )}
     </div>
   );
 }
 
-function CheckRow({ item, color, onToggle, onDelete }) {
+function CheckRow({ item, color, onToggle, onDelete, t }) {
   const [hov, setHov] = useState(false);
   const ref = useRef(null);
   const [sparks, setSparks] = useState([]);
@@ -210,17 +337,17 @@ function CheckRow({ item, color, onToggle, onDelete }) {
         {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
       </button>
       <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none" }}>{item.title}</span>
-      {hov && <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>削除</button>}
+      {hov && <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>}
     </div>
   );
 }
 
-function CalendarView({ tasks, taskCats, onSelectDay }) {
+function CalendarView({ tasks, taskCats, onSelectDay, t }) {
   const now = new Date();
   const [yr, setYr] = useState(now.getFullYear());
   const [mo, setMo] = useState(now.getMonth());
   const todayKey = today();
-  const WD = ["日","月","火","水","木","金","土"];
+  const WD = t("weekdays");
   const byDate = {};
   tasks.forEach(t=>{ if(t.due){ if(!byDate[t.due]) byDate[t.due]=[]; byDate[t.due].push(t); }});
   const days  = new Date(yr,mo+1,0).getDate();
@@ -263,33 +390,31 @@ function CalendarView({ tasks, taskCats, onSelectDay }) {
           );
         })}
       </div>
-      <div style={{ padding:"8px", textAlign:"center", fontSize:11, color:"#B0ACBF", borderTop:"1px solid #E4E2EA", letterSpacing:0.5 }}>日付をタップ → その日のタスクへ移動</div>
+      <div style={{ padding:"8px", textAlign:"center", fontSize:11, color:"#B0ACBF", borderTop:"1px solid #E4E2EA", letterSpacing:0.5 }}>{t("cal_footer")}</div>
     </div>
   );
 }
-
-const NAV = [
-  { id:"tasks",     icon:"☑️",  label:"タスク"         },
-  { id:"checklist", icon:"🎒",  label:"チェックリスト"  },
-  { id:"calendar",  icon:"📅",  label:"カレンダー"      },
-  { id:"settings",  icon:"⚙️",  label:"設定"            },
-];
 
 function load(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
 }
 
 export default function App() {
+  const [lang, setLang]       = useState(()=>load("tb_lang", "ja"));
   const [tab, setTab]         = useState("tasks");
   const [tasks, setTasks]     = useState(()=>load("tb_tasks",   DEFAULT_TASKS));
   const [clItems, setClItems] = useState(()=>load("tb_clItems", DEFAULT_CL));
   const [tCats, setTCats]     = useState(()=>load("tb_tCats",   DEFAULT_TASK_CATS));
   const [cCats, setCCats]     = useState(()=>load("tb_cCats",   DEFAULT_CL_CATS));
 
+  const t = key => TRANSLATIONS[lang][key];
+
+  useEffect(()=>{ localStorage.setItem("tb_lang",    JSON.stringify(lang));    }, [lang]);
   useEffect(()=>{ localStorage.setItem("tb_tasks",   JSON.stringify(tasks));   }, [tasks]);
   useEffect(()=>{ localStorage.setItem("tb_clItems", JSON.stringify(clItems)); }, [clItems]);
   useEffect(()=>{ localStorage.setItem("tb_tCats",   JSON.stringify(tCats));   }, [tCats]);
   useEffect(()=>{ localStorage.setItem("tb_cCats",   JSON.stringify(cCats));   }, [cCats]);
+
   const [filterCat,  setFilterCat]  = useState("all");
   const [filterDate, setFilterDate] = useState(null);
   const [mAddTask, setMAddTask] = useState(false);
@@ -343,18 +468,27 @@ export default function App() {
     setNotifBanner(dueTasks);
     if(typeof Notification === "undefined") return;
     if(Notification.permission === "granted") {
-      dueTasks.forEach(t => new Notification("Today's Brain 🧠", { body:`今日が期限：${t.title}`, icon:"https://fav.farm/🧠" }));
+      dueTasks.forEach(tk => new Notification("Today's Brain 🧠", { body: t("notif_banner_body")(tk.title), icon:"https://fav.farm/🧠" }));
     } else if(Notification.permission === "default") {
       Notification.requestPermission().then(perm => {
         setNotifPerm(perm);
-        if(perm === "granted") dueTasks.forEach(t => new Notification("Today's Brain 🧠", { body:`今日が期限：${t.title}`, icon:"https://fav.farm/🧠" }));
+        if(perm === "granted") dueTasks.forEach(tk => new Notification("Today's Brain 🧠", { body: t("notif_banner_body")(tk.title), icon:"https://fav.farm/🧠" }));
       });
     }
   }, [tasks]);
 
+  const NAV = [
+    { id:"tasks",     icon:"☑️",  label: t("nav_tasks")     },
+    { id:"checklist", icon:"🎒",  label: t("nav_checklist") },
+    { id:"calendar",  icon:"📅",  label: t("nav_calendar")  },
+    { id:"settings",  icon:"⚙️",  label: t("nav_settings")  },
+  ];
+
   const visibleCats = filterCat==="all" ? tCats : tCats.filter(c=>c.id===filterCat);
   const now = new Date();
-  const hdr = filterDate ? `${+filterDate.split("-")[1]}月${+filterDate.split("-")[2]}日 📅` : `${now.getMonth()+1}月${now.getDate()}日 🧠`;
+  const hdr = filterDate
+    ? t("fmt_filter_hdr")(+filterDate.split("-")[1], +filterDate.split("-")[2])
+    : t("fmt_header")(now.getMonth()+1, now.getDate());
   const totalTasks = tasks.filter(t=>!t.done).length;
 
   return (
@@ -367,18 +501,18 @@ export default function App() {
             <div>
               <div style={{ fontSize:10, fontWeight:900, color:"#B0A8C8", letterSpacing:3, textTransform:"uppercase" }}>Today's Brain</div>
               <div style={{ fontSize:24, fontWeight:900, color:"#0F0E2A", marginTop:2, lineHeight:1.1 }}>{hdr}</div>
-              {tab==="tasks" && totalTasks>0 && <div style={{ fontSize:12, color:"#9B8FC8", marginTop:3, fontWeight:700 }}>残り {totalTasks} 件 — ファイト！</div>}
-              {tab==="tasks" && totalTasks===0 && tasks.length>0 && <div style={{ fontSize:12, color:"#55EFC4", marginTop:3, fontWeight:700 }}>✦ 全部終わった！最高！</div>}
+              {tab==="tasks" && totalTasks>0 && <div style={{ fontSize:12, color:"#9B8FC8", marginTop:3, fontWeight:700 }}>{t("tasks_left")(totalTasks)}</div>}
+              {tab==="tasks" && totalTasks===0 && tasks.length>0 && <div style={{ fontSize:12, color:"#55EFC4", marginTop:3, fontWeight:700 }}>{t("all_done")}</div>}
             </div>
             <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-              {filterDate && <button onClick={clearDateFilter} style={{ padding:"6px 11px", borderRadius:20, border:"none", background:"#F3EFF8", color:"#9B8FC8", fontWeight:800, fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>✕ 今日</button>}
-              {tab==="tasks" && <button onClick={()=>{ const preselect=filterCat!=="all"?filterCat:tCats[0]?.id||""; setFTask({title:"",catId:preselect,due:""}); setMAddTask(true); }} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#7472A8", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #7472A820" }}>＋ タスク</button>}
-              {tab==="checklist" && <button onClick={()=>setMAddCl(true)} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#C8944A", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #C8944A20" }}>＋ 追加</button>}
+              {filterDate && <button onClick={clearDateFilter} style={{ padding:"6px 11px", borderRadius:20, border:"none", background:"#F3EFF8", color:"#9B8FC8", fontWeight:800, fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>{t("btn_today")}</button>}
+              {tab==="tasks" && <button onClick={()=>{ const preselect=filterCat!=="all"?filterCat:tCats[0]?.id||""; setFTask({title:"",catId:preselect,due:""}); setMAddTask(true); }} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#7472A8", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #7472A820" }}>{t("btn_add_task")}</button>}
+              {tab==="checklist" && <button onClick={()=>setMAddCl(true)} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#C8944A", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #C8944A20" }}>{t("btn_add")}</button>}
             </div>
           </div>
           {tab==="tasks" && (
             <div style={{ display:"flex", gap:6, marginTop:12, overflowX:"auto", paddingBottom:2 }}>
-              {[{id:"all",name:"すべて",color:"#0F0E2A",emoji:""},...tCats].map(c=>(
+              {[{id:"all",name:t("filter_all"),color:"#0F0E2A",emoji:""},...tCats].map(c=>(
                 <button key={c.id} onClick={()=>setFilterCat(c.id)} style={{ padding:"5px 13px", borderRadius:20, border:"none", fontSize:12, fontWeight:800, background:filterCat===c.id?(c.id==="all"?"#3A384A":c.color):(c.id==="all"?"#ECEAF2":c.color+"28"), color:filterCat===c.id?"#fff":(c.id==="all"?"#7472A8":c.color), cursor:"pointer", whiteSpace:"nowrap", fontFamily:"inherit", transition:"background 0.15s, color 0.15s" }}>{c.emoji} {c.name}</button>
               ))}
             </div>
@@ -390,13 +524,13 @@ export default function App() {
           <div style={{ background:"linear-gradient(135deg,#FF6B6B,#FF9F43)", padding:"10px 16px", display:"flex", alignItems:"flex-start", gap:10 }}>
             <span style={{ fontSize:20, flexShrink:0 }}>⏰</span>
             <div style={{ flex:1 }}>
-              <div style={{ fontSize:12, fontWeight:900, color:"#fff", marginBottom:3 }}>今日が期限のタスクがあります</div>
-              {notifBanner.map(t => {
-                const cat = tCats.find(c=>c.id===t.catId);
-                return <div key={t.id} onClick={()=>{ setFilterDate(today()); setFilterCat("all"); setTab("tasks"); setNotifBanner(null); }} style={{ fontSize:13, color:"#fff", fontWeight:700, opacity:0.95, display:"flex", alignItems:"center", gap:5, marginTop:2, cursor:"pointer" }}><span style={{ fontSize:14 }}>{cat?.emoji}</span><span style={{ textDecoration:"underline" }}>{t.title}</span></div>;
+              <div style={{ fontSize:12, fontWeight:900, color:"#fff", marginBottom:3 }}>{t("notif_banner_title")}</div>
+              {notifBanner.map(tk => {
+                const cat = tCats.find(c=>c.id===tk.catId);
+                return <div key={tk.id} onClick={()=>{ setFilterDate(today()); setFilterCat("all"); setTab("tasks"); setNotifBanner(null); }} style={{ fontSize:13, color:"#fff", fontWeight:700, opacity:0.95, display:"flex", alignItems:"center", gap:5, marginTop:2, cursor:"pointer" }}><span style={{ fontSize:14 }}>{cat?.emoji}</span><span style={{ textDecoration:"underline" }}>{tk.title}</span></div>;
               })}
             </div>
-            <button onClick={()=>setNotifBanner(null)} style={{ background:"rgba(255,255,255,0.25)", border:"none", borderRadius:8, color:"#fff", fontWeight:900, fontSize:11, padding:"4px 10px", cursor:"pointer", flexShrink:0, fontFamily:"inherit", letterSpacing:0.5 }}>閉じる</button>
+            <button onClick={()=>setNotifBanner(null)} style={{ background:"rgba(255,255,255,0.25)", border:"none", borderRadius:8, color:"#fff", fontWeight:900, fontSize:11, padding:"4px 10px", cursor:"pointer", flexShrink:0, fontFamily:"inherit", letterSpacing:0.5 }}>{t("btn_close")}</button>
           </div>
         )}
 
@@ -404,48 +538,56 @@ export default function App() {
         <div style={{ flex:1, padding:"16px 14px 88px", overflowY:"auto" }}>
           {tab==="tasks" && (
             <div>
-              {filterDate && <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:10, fontWeight:700 }}>📅 {filterDate.split("-").slice(1).map(Number).join("/")} の期限タスク</div>}
+              {filterDate && <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:10, fontWeight:700 }}>{t("filter_date_label")(+filterDate.split("-")[1], +filterDate.split("-")[2])}</div>}
               {visibleCats.map(cat=>{
-                const items = tasks.filter(t=>t.catId===cat.id).filter(t=>!filterDate||t.due===filterDate).sort((a,b)=>a.done-b.done||a.ts-b.ts);
+                const items = tasks.filter(tk=>tk.catId===cat.id).filter(tk=>!filterDate||tk.due===filterDate).sort((a,b)=>a.done-b.done||a.ts-b.ts);
                 if(filterDate && items.length===0) return null;
-                return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT}/>;
+                return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} t={t}/>;
               })}
-              {filterDate && tasks.filter(t=>t.due===filterDate).length===0 && (
+              {filterDate && tasks.filter(tk=>tk.due===filterDate).length===0 && (
                 <div style={{ textAlign:"center", padding:"60px 0", color:"#C0B8CC" }}>
                   <div style={{ fontSize:40 }}>🗓</div>
-                  <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>この日のタスクはありません</div>
+                  <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>{t("no_tasks_day")}</div>
                 </div>
               )}
             </div>
           )}
           {tab==="checklist" && (
             <div>
-              <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:14, fontWeight:700 }}>毎日リセット — カテゴリ別に確認 ✦</div>
-              {cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl}/>; })}
-              <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>＋ カテゴリを追加</button>
+              <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:14, fontWeight:700 }}>{t("cl_subtitle")}</div>
+              {cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} t={t}/>; })}
+              <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>{t("add_cat")}</button>
             </div>
           )}
-          {tab==="calendar" && <div style={{ border:"1px solid #E4E2EA" }}><CalendarView tasks={tasks} taskCats={tCats} onSelectDay={jumpToDay}/></div>}
+          {tab==="calendar" && <div style={{ border:"1px solid #E4E2EA" }}><CalendarView tasks={tasks} taskCats={tCats} onSelectDay={jumpToDay} t={t}/></div>}
           {tab==="settings" && (
             <div>
-              <SectionHead>通知設定</SectionHead>
+              <SectionHead>{t("sec_lang")}</SectionHead>
+              <div style={{ display:"flex", gap:8, marginBottom:20 }}>
+                {["ja","en"].map(l=>(
+                  <button key={l} onClick={()=>setLang(l)} style={{ flex:1, padding:"10px", borderRadius:12, border: lang===l ? "2px solid #7472A8" : "2px solid #E0DCF0", background: lang===l ? "#7472A8" : "#FFFCF8", color: lang===l ? "#fff" : "#9B8FC8", fontWeight:800, fontSize:14, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
+                    {l==="ja" ? "🇯🇵 日本語" : "🇺🇸 English"}
+                  </button>
+                ))}
+              </div>
+              <SectionHead>{t("sec_notif")}</SectionHead>
               <div style={{ background:"#FFFCF8", borderRadius:14, padding:"12px 16px", marginBottom:20, boxShadow:"0 1px 4px #0F0E2A0a", display:"flex", alignItems:"center", gap:12 }}>
                 <span style={{ fontSize:24 }}>🔔</span>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:800, color:"#0F0E2A" }}>期限タスクの通知</div>
-                  <div style={{ fontSize:11, color:"#B0A8C8", marginTop:2 }}>{notifPerm==="granted"?"✦ 通知が有効です":notifPerm==="denied"?"🚫 ブラウザ設定から許可してください":"アプリ起動時に期限タスクをお知らせします"}</div>
+                  <div style={{ fontSize:13, fontWeight:800, color:"#0F0E2A" }}>{t("notif_title")}</div>
+                  <div style={{ fontSize:11, color:"#B0A8C8", marginTop:2 }}>{notifPerm==="granted"?t("notif_granted"):notifPerm==="denied"?t("notif_denied"):t("notif_default")}</div>
                 </div>
-                {notifPerm==="default" && <button onClick={()=>{ Notification.requestPermission().then(p=>setNotifPerm(p)); }} style={{ padding:"7px 14px", borderRadius:20, border:"none", background:"linear-gradient(135deg,#7c6ef4,#A29BFE)", color:"#fff", fontWeight:800, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>許可する</button>}
+                {notifPerm==="default" && <button onClick={()=>{ Notification.requestPermission().then(p=>setNotifPerm(p)); }} style={{ padding:"7px 14px", borderRadius:20, border:"none", background:"linear-gradient(135deg,#7c6ef4,#A29BFE)", color:"#fff", fontWeight:800, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>{t("btn_allow")}</button>}
                 {notifPerm==="granted" && <span style={{ fontSize:20 }}>✅</span>}
               </div>
-              <SectionHead>タスクカテゴリ</SectionHead>
-              <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>行をドラッグして順番を変更できます</span></div>
-              <SortableCatList cats={tCats} onReorder={setTCats} onEdit={openEditCat} onDelete={id=>setTCats(cs=>cs.filter(c=>c.id!==id))}/>
-              <DashedAdd onClick={()=>setMAddTCat(true)} label="＋ カテゴリを追加"/>
-              <SectionHead style={{marginTop:24}}>チェックリストカテゴリ</SectionHead>
-              <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>行をドラッグして順番を変更できます</span></div>
-              <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))}/>
-              <DashedAdd onClick={()=>setMAddCCat(true)} label="＋ カテゴリを追加"/>
+              <SectionHead>{t("sec_task_cats")}</SectionHead>
+              <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
+              <SortableCatList cats={tCats} onReorder={setTCats} onEdit={openEditCat} onDelete={id=>setTCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
+              <DashedAdd onClick={()=>setMAddTCat(true)} label={t("add_cat")}/>
+              <SectionHead style={{marginTop:24}}>{t("sec_cl_cats")}</SectionHead>
+              <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
+              <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
+              <DashedAdd onClick={()=>setMAddCCat(true)} label={t("add_cat")}/>
             </div>
           )}
         </div>
@@ -467,82 +609,82 @@ export default function App() {
         const lockedCat = filterCat!=="all" ? tCats.find(c=>c.id===filterCat) : null;
         const accent = lockedCat ? lockedCat.color : "#7c6ef4";
         return (
-          <Modal title={lockedCat ? lockedCat.emoji+" "+lockedCat.name+"に追加" : "新しいタスク"} accent={accent} onClose={()=>setMAddTask(false)}>
-            <label style={lS}>タスク名</label>
-            <input style={iS} placeholder="例: メールチェック" value={fTask.title} onChange={e=>setFTask(v=>({...v,title:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addTask()} autoFocus/>
+          <Modal title={lockedCat ? t("modal_locked_cat")(lockedCat.emoji, lockedCat.name) : t("modal_add_task")} accent={accent} onClose={()=>setMAddTask(false)}>
+            <label style={lS}>{t("lbl_task_name")}</label>
+            <input style={iS} placeholder={t("ph_task")} value={fTask.title} onChange={e=>setFTask(v=>({...v,title:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addTask()} autoFocus/>
             {lockedCat ? (
               <div style={{ marginTop:14, display:"flex", alignItems:"center", gap:8, padding:"8px 12px", borderRadius:12, background:lockedCat.color+"15" }}>
                 <div style={{ width:10, height:10, borderRadius:"50%", background:lockedCat.color }}/>
                 <span style={{ fontSize:13, fontWeight:800, color:lockedCat.color }}>{lockedCat.emoji} {lockedCat.name}</span>
-                <span style={{ fontSize:11, color:"#C0B8CC", marginLeft:2 }}>（自動セット）</span>
+                <span style={{ fontSize:11, color:"#C0B8CC", marginLeft:2 }}>{t("auto_set")}</span>
               </div>
             ) : (
-              <><label style={lS}>カテゴリ</label><select style={iS} value={fTask.catId} onChange={e=>setFTask(v=>({...v,catId:e.target.value}))}>{tCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select></>
+              <><label style={lS}>{t("lbl_category")}</label><select style={iS} value={fTask.catId} onChange={e=>setFTask(v=>({...v,catId:e.target.value}))}>{tCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select></>
             )}
-            <label style={lS}>期限（任意）</label>
+            <label style={lS}>{t("lbl_due")}</label>
             <input style={iS} type="date" value={fTask.due} onChange={e=>setFTask(v=>({...v,due:e.target.value}))}/>
-            <button onClick={addTask} style={bP(accent)}>追加する</button>
+            <button onClick={addTask} style={bP(accent)}>{t("btn_add_item")}</button>
           </Modal>
         );
       })()}
       {mEditT && (
-        <Modal title="タスクを編集" accent="#48CAE4" onClose={()=>setMEditT(null)}>
-          <label style={lS}>タスク名</label>
+        <Modal title={t("modal_edit_task")} accent="#48CAE4" onClose={()=>setMEditT(null)}>
+          <label style={lS}>{t("lbl_task_name")}</label>
           <input style={iS} value={mEditT.title} onChange={e=>setMEditT(v=>({...v,title:e.target.value}))} autoFocus/>
-          <label style={lS}>カテゴリ</label>
+          <label style={lS}>{t("lbl_category")}</label>
           <select style={iS} value={mEditT.catId} onChange={e=>setMEditT(v=>({...v,catId:e.target.value}))}>{tCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select>
-          <label style={lS}>期限</label>
+          <label style={lS}>{t("lbl_due")}</label>
           <input style={iS} type="date" value={mEditT.due||""} onChange={e=>setMEditT(v=>({...v,due:e.target.value}))}/>
-          <button onClick={saveEditTask} style={bP("#48CAE4")}>保存する</button>
+          <button onClick={saveEditTask} style={bP("#48CAE4")}>{t("btn_save")}</button>
         </Modal>
       )}
       {mAddCl && (
-        <Modal title="チェック項目を追加" accent="#FF9F43" onClose={()=>setMAddCl(false)}>
-          <label style={lS}>項目名</label>
-          <input style={iS} placeholder="例: 財布を確認" value={fCl.title} onChange={e=>setFCl(v=>({...v,title:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addCl()} autoFocus/>
-          <label style={lS}>カテゴリ</label>
+        <Modal title={t("modal_add_cl")} accent="#FF9F43" onClose={()=>setMAddCl(false)}>
+          <label style={lS}>{t("lbl_item_name")}</label>
+          <input style={iS} placeholder={t("ph_item")} value={fCl.title} onChange={e=>setFCl(v=>({...v,title:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addCl()} autoFocus/>
+          <label style={lS}>{t("lbl_category")}</label>
           <select style={iS} value={fCl.clCatId} onChange={e=>setFCl(v=>({...v,clCatId:e.target.value}))}>{cCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select>
-          <button onClick={addCl} style={bP("#FF9F43")}>追加する</button>
+          <button onClick={addCl} style={bP("#FF9F43")}>{t("btn_add_item")}</button>
         </Modal>
       )}
       {mAddTCat && (
-        <Modal title="タスクカテゴリを追加" accent="#7c6ef4" onClose={()=>setMAddTCat(false)}>
-          <label style={lS}>カテゴリ名</label>
-          <input style={iS} placeholder="例: 勉強" value={fTCat.name} onChange={e=>setFTCat(v=>({...v,name:e.target.value}))} autoFocus/>
-          <label style={lS}>絵文字</label>
-          <input style={iS} placeholder="例: 📚" value={fTCat.emoji} onChange={e=>setFTCat(v=>({...v,emoji:e.target.value}))}/>
-          <label style={lS}>カラー</label>
-          <ColorPicker selected={fTCat.color} onSelect={c=>setFTCat(v=>({...v,color:c}))}/>
-          <button onClick={addTCat} style={bP(fTCat.color)}>追加する</button>
+        <Modal title={t("modal_add_tcat")} accent="#7c6ef4" onClose={()=>setMAddTCat(false)}>
+          <label style={lS}>{t("lbl_cat_name")}</label>
+          <input style={iS} placeholder={t("ph_cat")} value={fTCat.name} onChange={e=>setFTCat(v=>({...v,name:e.target.value}))} autoFocus/>
+          <label style={lS}>{t("lbl_emoji")}</label>
+          <input style={iS} placeholder={t("ph_emoji_task")} value={fTCat.emoji} onChange={e=>setFTCat(v=>({...v,emoji:e.target.value}))}/>
+          <label style={lS}>{t("lbl_color")}</label>
+          <ColorPicker selected={fTCat.color} onSelect={c=>setFTCat(v=>({...v,color:c}))} t={t}/>
+          <button onClick={addTCat} style={bP(fTCat.color)}>{t("btn_add_item")}</button>
         </Modal>
       )}
       {mAddCCat && (
-        <Modal title="チェックリストカテゴリを追加" accent="#FF9F43" onClose={()=>setMAddCCat(false)}>
-          <label style={lS}>カテゴリ名</label>
-          <input style={iS} placeholder="例: 外出グッズ" value={fCCat.name} onChange={e=>setFCCat(v=>({...v,name:e.target.value}))} autoFocus/>
-          <label style={lS}>絵文字</label>
-          <input style={iS} placeholder="例: 🎒" value={fCCat.emoji} onChange={e=>setFCCat(v=>({...v,emoji:e.target.value}))}/>
-          <label style={lS}>カラー</label>
-          <ColorPicker selected={fCCat.color} onSelect={c=>setFCCat(v=>({...v,color:c}))}/>
-          <button onClick={addCCat} style={bP(fCCat.color)}>追加する</button>
+        <Modal title={t("modal_add_ccat")} accent="#FF9F43" onClose={()=>setMAddCCat(false)}>
+          <label style={lS}>{t("lbl_cat_name")}</label>
+          <input style={iS} placeholder={t("ph_ccat")} value={fCCat.name} onChange={e=>setFCCat(v=>({...v,name:e.target.value}))} autoFocus/>
+          <label style={lS}>{t("lbl_emoji")}</label>
+          <input style={iS} placeholder={t("ph_emoji_ccat")} value={fCCat.emoji} onChange={e=>setFCCat(v=>({...v,emoji:e.target.value}))}/>
+          <label style={lS}>{t("lbl_color")}</label>
+          <ColorPicker selected={fCCat.color} onSelect={c=>setFCCat(v=>({...v,color:c}))} t={t}/>
+          <button onClick={addCCat} style={bP(fCCat.color)}>{t("btn_add_item")}</button>
         </Modal>
       )}
       {mEditCat && (
-        <Modal title="カテゴリを編集" accent={fECat.color} onClose={()=>setMEditCat(null)}>
-          <label style={lS}>カテゴリ名</label>
+        <Modal title={t("modal_edit_cat")} accent={fECat.color} onClose={()=>setMEditCat(null)}>
+          <label style={lS}>{t("lbl_cat_name")}</label>
           <input style={iS} value={fECat.name} onChange={e=>setFECat(v=>({...v,name:e.target.value}))} autoFocus/>
-          <label style={lS}>絵文字</label>
+          <label style={lS}>{t("lbl_emoji")}</label>
           <input style={iS} value={fECat.emoji} onChange={e=>setFECat(v=>({...v,emoji:e.target.value}))}/>
-          <label style={lS}>カラー</label>
-          <ColorPicker selected={fECat.color} onSelect={c=>setFECat(v=>({...v,color:c}))}/>
-          <button onClick={saveEditCat} style={bP(fECat.color)}>保存する</button>
+          <label style={lS}>{t("lbl_color")}</label>
+          <ColorPicker selected={fECat.color} onSelect={c=>setFECat(v=>({...v,color:c}))} t={t}/>
+          <button onClick={saveEditCat} style={bP(fECat.color)}>{t("btn_save")}</button>
         </Modal>
       )}
     </div>
   );
 }
 
-function SortableCatList({ cats, onReorder, onEdit, onDelete }) {
+function SortableCatList({ cats, onReorder, onEdit, onDelete, t }) {
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
   const state    = useRef({ dragIdx:null, overIdx:null, cats:[] });
@@ -585,7 +727,7 @@ function SortableCatList({ cats, onReorder, onEdit, onDelete }) {
       {cats.map((cat, i) => (
         <div key={cat.id} ref={el => itemRefs.current[i] = el}>
           <div style={{ height:overIdx===i&&dragIdx!==null&&dragIdx!==i?3:0, borderRadius:2, background:"#7472A8", marginBottom:overIdx===i&&dragIdx!==null&&dragIdx!==i?5:0, transition:"height 0.1s", overflow:"hidden" }}/>
-          <SettingRow cat={cat} isDragging={dragIdx===i} isOver={overIdx===i&&dragIdx!==i} gripRef={el=>gripRefs.current[i]=el} onEdit={()=>onEdit(cat)} onDelete={()=>onDelete(cat.id)} onDragStart={e=>onDragStart(e,i)} onDragOver={e=>onDragOver(e,i)} onDrop={e=>onDrop(e,i)} onDragEnd={onDragEnd}/>
+          <SettingRow cat={cat} isDragging={dragIdx===i} isOver={overIdx===i&&dragIdx!==i} gripRef={el=>gripRefs.current[i]=el} onEdit={()=>onEdit(cat)} onDelete={()=>onDelete(cat.id)} onDragStart={e=>onDragStart(e,i)} onDragOver={e=>onDragOver(e,i)} onDrop={e=>onDrop(e,i)} onDragEnd={onDragEnd} t={t}/>
         </div>
       ))}
     </div>
@@ -595,7 +737,7 @@ function SortableCatList({ cats, onReorder, onEdit, onDelete }) {
 function SectionHead({ children, style={} }) {
   return <div style={{ fontWeight:900, fontSize:14, color:"#0F0E2A", marginBottom:10, ...style }}>{children}</div>;
 }
-function SettingRow({ cat, onEdit, onDelete, onDragStart, onDragOver, onDrop, onDragEnd, gripRef, isDragging, isOver }) {
+function SettingRow({ cat, onEdit, onDelete, onDragStart, onDragOver, onDrop, onDragEnd, gripRef, isDragging, isOver, t }) {
   return (
     <div onDragOver={onDragOver} onDrop={onDrop} style={{ display:"flex", alignItems:"center", gap:10, background:isOver?"#F0ECFF":"#FFFCF8", padding:"10px 14px", borderRadius:14, marginBottom:8, borderLeft:`4px solid ${cat.color}`, boxShadow:isDragging?"0 8px 24px #0F0E2A22":"0 1px 4px #0F0E2A0a", opacity:isDragging?0.35:1, transform:isDragging?"scale(1.03) rotate(1deg)":"scale(1)", transition:"box-shadow 0.15s, opacity 0.15s, transform 0.15s, background 0.1s", userSelect:"none" }}>
       <span ref={gripRef} draggable onDragStart={onDragStart} onDragEnd={onDragEnd} style={{ display:"flex", flexDirection:"column", gap:3, padding:"6px 8px", flexShrink:0, cursor:isDragging?"grabbing":"grab", touchAction:"none", borderRadius:6, background:isDragging?"#EDE8F8":"transparent" }}>
@@ -604,8 +746,8 @@ function SettingRow({ cat, onEdit, onDelete, onDragStart, onDragOver, onDrop, on
       <span style={{ fontSize:18 }}>{cat.emoji}</span>
       <div style={{ width:12,height:12,borderRadius:"50%",background:cat.color,flexShrink:0 }}/>
       <span style={{ flex:1,fontSize:14,fontWeight:700,color:"#0F0E2A" }}>{cat.name}</span>
-      <button onClick={e=>{ e.stopPropagation(); onEdit(); }} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>編集</button>
-      <button onClick={e=>{ e.stopPropagation(); onDelete(); }} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>削除</button>
+      <button onClick={e=>{ e.stopPropagation(); onEdit(); }} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>{t("btn_edit")}</button>
+      <button onClick={e=>{ e.stopPropagation(); onDelete(); }} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
     </div>
   );
 }
