@@ -317,7 +317,7 @@ function Modal({ title, accent="#7c6ef4", onClose, children }) {
   );
 }
 
-function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, isTask=true, t }) {
+function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAdd, isTask=true, t }) {
   const done  = items.filter(i=>i.done??i.checked).length;
   const total = items.length;
   const allDone = total>0 && done===total;
@@ -330,6 +330,9 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, isTa
         <div style={{ background: allDone ? "#fff" : "rgba(255,255,255,0.3)", borderRadius:20, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
           <span style={{ fontSize:11, fontWeight:900, color: allDone ? cat.color : "#fff" }}>{allDone ? t("badge_done") : `${done}/${total}`}</span>
         </div>
+        {onAdd && (
+          <button onClick={onAdd} style={{ width:26, height:26, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.35)", color:"#fff", fontSize:18, lineHeight:1, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontWeight:400 }}>＋</button>
+        )}
       </div>
       {total>0 && (
         <div style={{ height:3, background:"#F0ECF8" }}>
@@ -632,7 +635,7 @@ export default function App() {
                 visibleCats.map(cat=>{
                   const items = tasks.filter(tk=>tk.catId===cat.id).filter(activeDateFilter).sort((a,b)=>a.done-b.done||a.ts-b.ts);
                   if(items.length===0 && filterDate) return null;
-                  return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} t={t}/>;
+                  return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} onAdd={()=>{ setFTask({title:"",catId:cat.id,due:filterDate||""}); setMAddTask(true); }} t={t}/>;
                 })
               )}
               {tCats.length>0 && tasks.filter(activeDateFilter).length===0 && !filterDate && (
@@ -658,7 +661,7 @@ export default function App() {
                   <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>{t("no_cats_yet")}</div>
                 </div>
               ) : (
-                cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} t={t}/>; })
+                cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} onAdd={()=>{ setFCl({title:"",clCatId:cat.id,repeat:"daily"}); setMAddCl(true); }} t={t}/>; })
               )}
               <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>{t("add_cat")}</button>
             </div>
