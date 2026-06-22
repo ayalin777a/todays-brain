@@ -14,16 +14,16 @@ const PALETTE = {
     { hex:"#8A9BAA", label:"Smoke" },
   ],
   vivid: [
-    { hex:"#FFB3B3", label:"Red" },
-    { hex:"#FFCC99", label:"Orange" },
-    { hex:"#FFE899", label:"Yellow" },
-    { hex:"#99DDBB", label:"Green" },
-    { hex:"#99CCFF", label:"Blue" },
-    { hex:"#BBAAFF", label:"Violet" },
-    { hex:"#FFB3D9", label:"Pink" },
-    { hex:"#99DDDD", label:"Cyan" },
-    { hex:"#FFBBAA", label:"Coral" },
-    { hex:"#BBBBCC", label:"Mist" },
+    { hex:"#E87878", label:"Red" },
+    { hex:"#E0A060", label:"Orange" },
+    { hex:"#C8B040", label:"Yellow" },
+    { hex:"#4EBD88", label:"Green" },
+    { hex:"#5AAAE0", label:"Blue" },
+    { hex:"#9078D8", label:"Violet" },
+    { hex:"#E070B0", label:"Pink" },
+    { hex:"#40B8B8", label:"Cyan" },
+    { hex:"#E08868", label:"Coral" },
+    { hex:"#8890A8", label:"Slate" },
   ],
 };
 
@@ -177,15 +177,15 @@ const TRANSLATIONS = {
 const DEFAULTS = {
   ja: {
     tCats: [
-      { id:"morning",   name:"午前",         color:"#99CCFF", emoji:"🌤" },
-      { id:"afternoon", name:"午後",         color:"#FFE899", emoji:"☀️" },
-      { id:"work",      name:"仕事",         color:"#FFB3B3", emoji:"💼" },
-      { id:"private",   name:"プライベート", color:"#99DDBB", emoji:"🌿" },
+      { id:"morning",   name:"午前",         color:"#5AAAE0", emoji:"🌤" },
+      { id:"afternoon", name:"午後",         color:"#C8B040", emoji:"☀️" },
+      { id:"work",      name:"仕事",         color:"#E87878", emoji:"💼" },
+      { id:"private",   name:"プライベート", color:"#4EBD88", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"朝の持ち物", color:"#99CCFF", emoji:"🎒" },
-      { id:"cl_work",    name:"仕事グッズ", color:"#FFB3B3", emoji:"💻" },
-      { id:"cl_night",   name:"夜の準備",   color:"#BBAAFF", emoji:"🌙" },
+      { id:"cl_morning", name:"朝の持ち物", color:"#5AAAE0", emoji:"🎒" },
+      { id:"cl_work",    name:"仕事グッズ", color:"#E87878", emoji:"💻" },
+      { id:"cl_night",   name:"夜の準備",   color:"#9078D8", emoji:"🌙" },
     ],
     tasks: [
       { id:"t1", title:"メールチェック",         catId:"morning",   done:false, due:"", ts:1 },
@@ -204,15 +204,15 @@ const DEFAULTS = {
   },
   en: {
     tCats: [
-      { id:"morning",   name:"Morning", color:"#99CCFF", emoji:"🌤" },
-      { id:"afternoon", name:"Afternoon", color:"#FFE899", emoji:"☀️" },
-      { id:"work",      name:"Work",    color:"#FFB3B3", emoji:"💼" },
-      { id:"private",   name:"Personal", color:"#99DDBB", emoji:"🌿" },
+      { id:"morning",   name:"Morning", color:"#5AAAE0", emoji:"🌤" },
+      { id:"afternoon", name:"Afternoon", color:"#C8B040", emoji:"☀️" },
+      { id:"work",      name:"Work",    color:"#E87878", emoji:"💼" },
+      { id:"private",   name:"Personal", color:"#4EBD88", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"Morning bag", color:"#99CCFF", emoji:"🎒" },
-      { id:"cl_work",    name:"Work gear",   color:"#FFB3B3", emoji:"💻" },
-      { id:"cl_night",   name:"Night prep",  color:"#BBAAFF", emoji:"🌙" },
+      { id:"cl_morning", name:"Morning bag", color:"#5AAAE0", emoji:"🎒" },
+      { id:"cl_work",    name:"Work gear",   color:"#E87878", emoji:"💻" },
+      { id:"cl_night",   name:"Night prep",  color:"#9078D8", emoji:"🌙" },
     ],
     tasks: [
       { id:"t1", title:"Check emails",        catId:"morning",   done:false, due:"", ts:1 },
