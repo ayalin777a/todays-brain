@@ -417,11 +417,10 @@ function CheckRow({ item, color, onToggle, onDelete, t }) {
   );
 }
 
-function CalendarView({ tasks, taskCats, onSelectDay, t }) {
+function CalendarView({ tasks, taskCats, onSelectDay, todayKey, selectedDate, t }) {
   const now = new Date();
   const [yr, setYr] = useState(now.getFullYear());
   const [mo, setMo] = useState(now.getMonth());
-  const todayKey = today();
   const WD = t("weekdays");
   const byDate = {};
   tasks.forEach(t=>{ if(t.due){ if(!byDate[t.due]) byDate[t.due]=[]; byDate[t.due].push(t); }});
@@ -449,15 +448,16 @@ function CalendarView({ tasks, taskCats, onSelectDay, t }) {
           const d   = i+1;
           const key = `${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
           const its = byDate[key]||[];
-          const isTo= key===todayKey;
+          const isTo  = key===todayKey;
+          const isSel = key===(selectedDate||todayKey);
           const dow = (first+i)%7;
           const isLastCol = (first+i)%7===6;
           return (
             <div key={d} onClick={()=>onSelectDay(key)}
-              onMouseEnter={e=>{ if(!isTo) e.currentTarget.style.background="#F0EEF8"; }}
-              onMouseLeave={e=>{ if(!isTo) e.currentTarget.style.background="transparent"; }}
-              style={{ minHeight:48, padding:"6px 4px", background:isTo?"#7472A818":"transparent", borderRight:isLastCol?"none":"1px solid #E4E2EA", borderBottom:"1px solid #E4E2EA", cursor:"pointer", transition:"background 0.1s", borderLeft:isTo?"2px solid #7472A8":"none" }}>
-              <div style={{ textAlign:"center", fontSize:12, fontWeight:isTo?800:400, color:isTo?"#7472A8":dow===0?"#C07070":dow===6?"#7BAFD4":"#2A2840" }}>{d}</div>
+              onMouseEnter={e=>{ if(!isTo&&!isSel) e.currentTarget.style.background="#F0EEF8"; }}
+              onMouseLeave={e=>{ if(!isTo&&!isSel) e.currentTarget.style.background="transparent"; }}
+              style={{ minHeight:48, padding:"6px 4px", background:isSel?"#7472A830":isTo?"#7472A818":"transparent", borderRight:isLastCol?"none":"1px solid #E4E2EA", borderBottom:"1px solid #E4E2EA", cursor:"pointer", transition:"background 0.1s", borderLeft:isSel?"2px solid #7472A8":"none" }}>
+              <div style={{ textAlign:"center", fontSize:12, fontWeight:isSel?800:400, color:isSel?"#7472A8":dow===0?"#C07070":dow===6?"#7BAFD4":"#2A2840" }}>{d}</div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:2, justifyContent:"center", marginTop:3 }}>
                 {its.slice(0,4).map(tk=>{ const c=taskCats.find(c=>c.id===tk.catId); return <div key={tk.id} style={{ width:6,height:6,borderRadius:"50%",background:c?.color||"#ccc",flexShrink:0 }}/>; })}
               </div>
@@ -557,7 +557,12 @@ export default function App() {
     else                     setCCats(cs=>cs.map(c=>c.id===mEditCat.id?{...c,...fECat}:c));
     setMEditCat(null);
   };
-  const jumpToDay = key => { setFilterDate(key); setFilterCat("all"); setTab("tasks"); };
+  const jumpToDay = key => {
+    setFilterCat("all");
+    setTab("tasks");
+    // 今日をタップ → 通常の今日ビュー（filterDateなし）
+    setFilterDate(key === todayStr ? null : key);
+  };
   const clearDateFilter = () => setFilterDate(null);
 
   // todayStr が変わった瞬間（日付変更）または初回に通知を発火
@@ -684,7 +689,7 @@ export default function App() {
               <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>{t("add_cat")}</button>
             </div>
           )}
-          {tab==="calendar" && <div style={{ border:"1px solid #E4E2EA" }}><CalendarView tasks={tasks} taskCats={tCats} onSelectDay={jumpToDay} t={t}/></div>}
+          {tab==="calendar" && <div style={{ border:"1px solid #E4E2EA" }}><CalendarView tasks={tasks} taskCats={tCats} onSelectDay={jumpToDay} todayKey={todayStr} selectedDate={filterDate} t={t}/></div>}
           {tab==="settings" && (
             <div>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
