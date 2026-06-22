@@ -66,6 +66,7 @@ const TRANSLATIONS = {
     lbl_category: "カテゴリ",
     lbl_due: "期限（任意）",
     lbl_item_name: "項目名",
+    lbl_repeat: "繰り返し",
     lbl_cat_name: "カテゴリ名",
     lbl_emoji: "絵文字",
     lbl_color: "カラー",
@@ -134,6 +135,7 @@ const TRANSLATIONS = {
     lbl_category: "Category",
     lbl_due: "Due date (optional)",
     lbl_item_name: "Item name",
+    lbl_repeat: "Repeat",
     lbl_cat_name: "Category name",
     lbl_emoji: "Emoji",
     lbl_color: "Color",
@@ -490,7 +492,7 @@ export default function App() {
   const [mEditT,   setMEditT]   = useState(null);
   const [mEditCat, setMEditCat] = useState(null);
   const [fTask,  setFTask]  = useState({ title:"", catId:tCats[0]?.id||"", due:"" });
-  const [fCl,    setFCl]    = useState({ title:"", clCatId:cCats[0]?.id||"" });
+  const [fCl,    setFCl]    = useState({ title:"", clCatId:cCats[0]?.id||"", repeat:"daily" });
   const [fTCat,  setFTCat]  = useState({ name:"", color:PALETTE.muted[0].hex, emoji:"📌" });
   const [fCCat,  setFCCat]  = useState({ name:"", color:PALETTE.muted[3].hex, emoji:"📦" });
   const [fECat,  setFECat]  = useState({ name:"", color:"", emoji:"" });
@@ -523,8 +525,8 @@ export default function App() {
   const deleteCl = id => setClItems(cs=>cs.filter(c=>c.id!==id));
   const addCl = () => {
     if(!fCl.title.trim()) return;
-    setClItems(cs=>[...cs,{id:uid(),title:fCl.title.trim(),clCatId:fCl.clCatId,checked:false}]);
-    setFCl({title:"",clCatId:cCats[0]?.id||""}); setMAddCl(false);
+    setClItems(cs=>[...cs,{id:uid(),title:fCl.title.trim(),clCatId:fCl.clCatId,checked:false,repeat:fCl.repeat}]);
+    setFCl({title:"",clCatId:cCats[0]?.id||"",repeat:"daily"}); setMAddCl(false);
   };
   const addTCat = () => { if(!fTCat.name.trim()) return; setTCats(cs=>[...cs,{id:uid(),...fTCat}]); setFTCat({name:"",color:PALETTE.muted[0].hex,emoji:"📌"}); setMAddTCat(false); };
   const addCCat = () => { if(!fCCat.name.trim()) return; setCCats(cs=>[...cs,{id:uid(),...fCCat}]); setFCCat({name:"",color:PALETTE.muted[3].hex,emoji:"📦"}); setMAddCCat(false); };
@@ -704,27 +706,6 @@ export default function App() {
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
               <SortableCatList cats={tCats} onReorder={setTCats} onEdit={openEditCat} onDelete={id=>setTCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
               <DashedAdd onClick={()=>setMAddTCat(true)} label={t("add_cat")}/>
-              <SectionHead style={{marginTop:24}}>{t("sec_cl_repeat")}</SectionHead>
-              {cCats.map(cat=>{
-                const items = clItems.filter(c=>c.clCatId===cat.id);
-                if(items.length===0) return null;
-                return (
-                  <div key={cat.id} style={{ marginBottom:12 }}>
-                    <div style={{ fontSize:12, fontWeight:800, color:cat.color, marginBottom:6, display:"flex", alignItems:"center", gap:5 }}><span>{cat.emoji}</span><span>{cat.name}</span></div>
-                    {items.map(item=>(
-                      <div key={item.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", background:"#FFFCF8", borderRadius:10, marginBottom:4, borderLeft:`3px solid ${cat.color}` }}>
-                        <span style={{ flex:1, fontSize:13, color:"#0F0E2A" }}>{item.title}</span>
-                        <button onClick={()=>setClItems(cs=>cs.map(c=>c.id===item.id?{...c, repeat:(c.repeat??"daily")==="daily"?"once":"daily"}:c))}
-                          style={{ padding:"3px 12px", borderRadius:20, border:"none", cursor:"pointer", fontWeight:700, fontSize:11, fontFamily:"inherit",
-                            background:(item.repeat??"daily")==="daily"?"#EEF2FF":"#F3EFF8",
-                            color:(item.repeat??"daily")==="daily"?"#5472C8":"#B0A8C8" }}>
-                          {(item.repeat??"daily")==="daily" ? "🔄 "+t("repeat_daily") : "1️⃣ "+t("repeat_once")}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
               <SectionHead style={{marginTop:24}}>{t("sec_cl_cats")}</SectionHead>
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
               <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
@@ -785,6 +766,14 @@ export default function App() {
           <input style={iS} placeholder={t("ph_item")} value={fCl.title} onChange={e=>setFCl(v=>({...v,title:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addCl()} autoFocus/>
           <label style={lS}>{t("lbl_category")}</label>
           <select style={iS} value={fCl.clCatId} onChange={e=>setFCl(v=>({...v,clCatId:e.target.value}))}>{cCats.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}</select>
+          <label style={lS}>{t("lbl_repeat")}</label>
+          <div style={{ display:"flex", gap:8, marginTop:6 }}>
+            {["daily","once"].map(r=>(
+              <button key={r} onClick={()=>setFCl(v=>({...v,repeat:r}))} style={{ flex:1, padding:"10px", borderRadius:12, border: fCl.repeat===r ? "none" : "1.5px solid #E0DCF0", background: fCl.repeat===r ? (r==="daily"?"#EEF2FF":"#F3EFF8") : "transparent", color: fCl.repeat===r ? (r==="daily"?"#5472C8":"#9B8FC8") : "#C0B8CC", fontWeight:800, fontSize:13, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
+                {r==="daily" ? "🔄 "+t("repeat_daily") : "1️⃣ "+t("repeat_once")}
+              </button>
+            ))}
+          </div>
           <button onClick={addCl} style={bP("#FF9F43")}>{t("btn_add_item")}</button>
         </Modal>
       )}
