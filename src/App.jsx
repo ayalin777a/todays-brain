@@ -2,16 +2,16 @@ import { useState, useEffect, useRef } from "react";
 
 const PALETTE = {
   muted: [
-    { hex:"#E8B4AE", label:"Terracotta" },
-    { hex:"#E8C89A", label:"Burnt" },
-    { hex:"#EDD8A0", label:"Gold" },
-    { hex:"#A8D4D8", label:"Teal" },
-    { hex:"#B8D4EC", label:"Slate Blue" },
-    { hex:"#C4C0E8", label:"Lavender" },
-    { hex:"#DDB8CC", label:"Mauve" },
-    { hex:"#A8D4BC", label:"Sage" },
-    { hex:"#C8D8A8", label:"Olive" },
-    { hex:"#C4CED8", label:"Smoke" },
+    { hex:"#C0766A", label:"Terracotta" },
+    { hex:"#C8944A", label:"Burnt" },
+    { hex:"#C8A85A", label:"Gold" },
+    { hex:"#5FAAB0", label:"Teal" },
+    { hex:"#7BAFD4", label:"Slate Blue" },
+    { hex:"#8F87C8", label:"Lavender" },
+    { hex:"#B87AAA", label:"Mauve" },
+    { hex:"#5FA88A", label:"Sage" },
+    { hex:"#9BAA72", label:"Olive" },
+    { hex:"#8A9BAA", label:"Smoke" },
   ],
   vivid: [
     { hex:"#FFB3B3", label:"Red" },
@@ -177,15 +177,15 @@ const TRANSLATIONS = {
 const DEFAULTS = {
   ja: {
     tCats: [
-      { id:"morning",   name:"午前",         color:"#7BAFD4", emoji:"🌤" },
-      { id:"afternoon", name:"午後",         color:"#C8A85A", emoji:"☀️" },
-      { id:"work",      name:"仕事",         color:"#C0766A", emoji:"💼" },
-      { id:"private",   name:"プライベート", color:"#5FA88A", emoji:"🌿" },
+      { id:"morning",   name:"午前",         color:"#99CCFF", emoji:"🌤" },
+      { id:"afternoon", name:"午後",         color:"#FFE899", emoji:"☀️" },
+      { id:"work",      name:"仕事",         color:"#FFB3B3", emoji:"💼" },
+      { id:"private",   name:"プライベート", color:"#99DDBB", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"朝の持ち物", color:"#7BAFD4", emoji:"🎒" },
-      { id:"cl_work",    name:"仕事グッズ", color:"#C0766A", emoji:"💻" },
-      { id:"cl_night",   name:"夜の準備",   color:"#8F87C8", emoji:"🌙" },
+      { id:"cl_morning", name:"朝の持ち物", color:"#99CCFF", emoji:"🎒" },
+      { id:"cl_work",    name:"仕事グッズ", color:"#FFB3B3", emoji:"💻" },
+      { id:"cl_night",   name:"夜の準備",   color:"#BBAAFF", emoji:"🌙" },
     ],
     tasks: [
       { id:"t1", title:"メールチェック",         catId:"morning",   done:false, due:"", ts:1 },
@@ -204,15 +204,15 @@ const DEFAULTS = {
   },
   en: {
     tCats: [
-      { id:"morning",   name:"Morning", color:"#7BAFD4", emoji:"🌤" },
-      { id:"afternoon", name:"Afternoon", color:"#C8A85A", emoji:"☀️" },
-      { id:"work",      name:"Work",    color:"#C0766A", emoji:"💼" },
-      { id:"private",   name:"Personal", color:"#5FA88A", emoji:"🌿" },
+      { id:"morning",   name:"Morning", color:"#99CCFF", emoji:"🌤" },
+      { id:"afternoon", name:"Afternoon", color:"#FFE899", emoji:"☀️" },
+      { id:"work",      name:"Work",    color:"#FFB3B3", emoji:"💼" },
+      { id:"private",   name:"Personal", color:"#99DDBB", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"Morning bag", color:"#7BAFD4", emoji:"🎒" },
-      { id:"cl_work",    name:"Work gear",   color:"#C0766A", emoji:"💻" },
-      { id:"cl_night",   name:"Night prep",  color:"#8F87C8", emoji:"🌙" },
+      { id:"cl_morning", name:"Morning bag", color:"#99CCFF", emoji:"🎒" },
+      { id:"cl_work",    name:"Work gear",   color:"#FFB3B3", emoji:"💻" },
+      { id:"cl_night",   name:"Night prep",  color:"#BBAAFF", emoji:"🌙" },
     ],
     tasks: [
       { id:"t1", title:"Check emails",        catId:"morning",   done:false, due:"", ts:1 },
