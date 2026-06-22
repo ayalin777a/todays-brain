@@ -411,7 +411,7 @@ function CheckRow({ item, color, onToggle, onDelete, t }) {
       <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.checked?"scale(1.1)":"scale(1)", opacity:item.checked?0.45:1 }}>
         {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
       </button>
-      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1, transition:"opacity 0.25s", paddingLeft:8 }}>{item.title}</span>
+      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1, transition:"opacity 0.25s" }}>{item.title}</span>
       {hov && <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>}
     </div>
   );
