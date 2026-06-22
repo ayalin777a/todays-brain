@@ -177,15 +177,15 @@ const TRANSLATIONS = {
 const DEFAULTS = {
   ja: {
     tCats: [
-      { id:"morning",   name:"午前",         color:"#0099FF", emoji:"🌤" },
-      { id:"afternoon", name:"午後",         color:"#FFCC00", emoji:"☀️" },
-      { id:"work",      name:"仕事",         color:"#FF4444", emoji:"💼" },
-      { id:"private",   name:"プライベート", color:"#00CC66", emoji:"🌿" },
+      { id:"morning",   name:"午前",         color:"#7BAFD4", emoji:"🌤" },
+      { id:"afternoon", name:"午後",         color:"#C8A85A", emoji:"☀️" },
+      { id:"work",      name:"仕事",         color:"#C0766A", emoji:"💼" },
+      { id:"private",   name:"プライベート", color:"#5FA88A", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"朝の持ち物", color:"#0099FF", emoji:"🎒" },
-      { id:"cl_work",    name:"仕事グッズ", color:"#FF4444", emoji:"💻" },
-      { id:"cl_night",   name:"夜の準備",   color:"#7B4FFF", emoji:"🌙" },
+      { id:"cl_morning", name:"朝の持ち物", color:"#7BAFD4", emoji:"🎒" },
+      { id:"cl_work",    name:"仕事グッズ", color:"#C0766A", emoji:"💻" },
+      { id:"cl_night",   name:"夜の準備",   color:"#8F87C8", emoji:"🌙" },
     ],
     tasks: [
       { id:"t1", title:"メールチェック",         catId:"morning",   done:false, due:"", ts:1 },
@@ -204,15 +204,15 @@ const DEFAULTS = {
   },
   en: {
     tCats: [
-      { id:"morning",   name:"Morning", color:"#0099FF", emoji:"🌤" },
-      { id:"afternoon", name:"Afternoon", color:"#FFCC00", emoji:"☀️" },
-      { id:"work",      name:"Work",    color:"#FF4444", emoji:"💼" },
-      { id:"private",   name:"Personal", color:"#00CC66", emoji:"🌿" },
+      { id:"morning",   name:"Morning",   color:"#7BAFD4", emoji:"🌤" },
+      { id:"afternoon", name:"Afternoon", color:"#C8A85A", emoji:"☀️" },
+      { id:"work",      name:"Work",      color:"#C0766A", emoji:"💼" },
+      { id:"private",   name:"Personal",  color:"#5FA88A", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"Morning bag", color:"#0099FF", emoji:"🎒" },
-      { id:"cl_work",    name:"Work gear",   color:"#FF4444", emoji:"💻" },
-      { id:"cl_night",   name:"Night prep",  color:"#7B4FFF", emoji:"🌙" },
+      { id:"cl_morning", name:"Morning bag", color:"#7BAFD4", emoji:"🎒" },
+      { id:"cl_work",    name:"Work gear",   color:"#C0766A", emoji:"💻" },
+      { id:"cl_night",   name:"Night prep",  color:"#8F87C8", emoji:"🌙" },
     ],
     tasks: [
       { id:"t1", title:"Check emails",        catId:"morning",   done:false, due:"", ts:1 },
