@@ -94,6 +94,9 @@ const TRANSLATIONS = {
     sec_cl_repeat: "チェックリスト 繰り返し設定",
     repeat_daily: "毎日繰り返す",
     repeat_once: "一回のみ",
+    sec_danger: "データ",
+    btn_reset: "🔄 サンプルデータに戻す",
+    confirm_reset: "現在のデータが全て削除されます。サンプルデータに戻しますか？",
     fmt_header: (m, d) => `${m}月${d}日 🧠`,
     fmt_filter_hdr: (m, d) => `${m}月${d}日 📅`,
   },
@@ -163,6 +166,9 @@ const TRANSLATIONS = {
     sec_cl_repeat: "Checklist Repeat Settings",
     repeat_daily: "Repeat daily",
     repeat_once: "One time only",
+    sec_danger: "Data",
+    btn_reset: "🔄 Restore sample data",
+    confirm_reset: "This will replace all current data with sample data. Continue?",
     fmt_header: (m, d) => `${m}/${d} 🧠`,
     fmt_filter_hdr: (m, d) => `${m}/${d} 📅`,
   },
@@ -728,6 +734,16 @@ export default function App() {
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
               <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
               <DashedAdd onClick={()=>setMAddCCat(true)} label={t("add_cat")}/>
+              <div style={{ marginTop:32, borderTop:"1px solid #F0ECF8", paddingTop:20 }}>
+                <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10 }}>{t("sec_danger")}</div>
+                <button onClick={()=>{
+                  if(!window.confirm(t("confirm_reset"))) return;
+                  const d = DEFAULTS[lang] || DEFAULTS.ja;
+                  setTasks(d.tasks); setClItems(d.clItems); setTCats(d.tCats); setCCats(d.cCats);
+                }} style={{ width:"100%", padding:"11px", borderRadius:14, border:"1.5px solid #FFD0D0", background:"transparent", color:"#FF8080", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>
+                  {t("btn_reset")}
+                </button>
+              </div>
             </div>
           )}
         </div>
