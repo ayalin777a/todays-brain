@@ -2,28 +2,28 @@ import { useState, useEffect, useRef } from "react";
 
 const PALETTE = {
   muted: [
-    { hex:"#C0766A", label:"Terracotta" },
-    { hex:"#C8944A", label:"Burnt" },
-    { hex:"#C8A85A", label:"Gold" },
-    { hex:"#5FAAB0", label:"Teal" },
-    { hex:"#7BAFD4", label:"Slate Blue" },
-    { hex:"#8F87C8", label:"Lavender" },
-    { hex:"#B87AAA", label:"Mauve" },
-    { hex:"#5FA88A", label:"Sage" },
-    { hex:"#9BAA72", label:"Olive" },
-    { hex:"#8A9BAA", label:"Smoke" },
+    { hex:"#E8B4AE", label:"Terracotta" },
+    { hex:"#E8C89A", label:"Burnt" },
+    { hex:"#EDD8A0", label:"Gold" },
+    { hex:"#A8D4D8", label:"Teal" },
+    { hex:"#B8D4EC", label:"Slate Blue" },
+    { hex:"#C4C0E8", label:"Lavender" },
+    { hex:"#DDB8CC", label:"Mauve" },
+    { hex:"#A8D4BC", label:"Sage" },
+    { hex:"#C8D8A8", label:"Olive" },
+    { hex:"#C4CED8", label:"Smoke" },
   ],
   vivid: [
-    { hex:"#FF4444", label:"Red" },
-    { hex:"#FF7A00", label:"Orange" },
-    { hex:"#FFCC00", label:"Yellow" },
-    { hex:"#00CC66", label:"Green" },
-    { hex:"#0099FF", label:"Blue" },
-    { hex:"#7B4FFF", label:"Violet" },
-    { hex:"#FF3D9A", label:"Pink" },
-    { hex:"#00CCCC", label:"Cyan" },
-    { hex:"#FF6B35", label:"Coral" },
-    { hex:"#333333", label:"Charcoal" },
+    { hex:"#FFB3B3", label:"Red" },
+    { hex:"#FFCC99", label:"Orange" },
+    { hex:"#FFE899", label:"Yellow" },
+    { hex:"#99DDBB", label:"Green" },
+    { hex:"#99CCFF", label:"Blue" },
+    { hex:"#BBAAFF", label:"Violet" },
+    { hex:"#FFB3D9", label:"Pink" },
+    { hex:"#99DDDD", label:"Cyan" },
+    { hex:"#FFBBAA", label:"Coral" },
+    { hex:"#BBBBCC", label:"Mist" },
   ],
 };
 
@@ -418,9 +418,15 @@ function CheckRow({ item, color, onToggle, onDelete, t }) {
 }
 
 function CalendarView({ tasks, taskCats, onSelectDay, todayKey, selectedDate, t }) {
-  const now = new Date();
-  const [yr, setYr] = useState(now.getFullYear());
-  const [mo, setMo] = useState(now.getMonth());
+  const todayDate = new Date(todayKey);
+  const [yr, setYr] = useState(todayDate.getFullYear());
+  const [mo, setMo] = useState(todayDate.getMonth());
+  // 日付が変わったとき（todayKey更新時）にカレンダーの表示月を今日に追従
+  useEffect(() => {
+    const d = new Date(todayKey);
+    setYr(d.getFullYear());
+    setMo(d.getMonth());
+  }, [todayKey]);
   const WD = t("weekdays");
   const byDate = {};
   tasks.forEach(t=>{ if(t.due){ if(!byDate[t.due]) byDate[t.due]=[]; byDate[t.due].push(t); }});
