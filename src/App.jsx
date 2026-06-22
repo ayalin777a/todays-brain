@@ -160,34 +160,62 @@ const TRANSLATIONS = {
   },
 };
 
-const DEFAULT_TASK_CATS = [
-  { id:"morning",   name:"午前",         color:"#7BAFD4", emoji:"🌤" },
-  { id:"afternoon", name:"午後",         color:"#C8A85A", emoji:"☀️" },
-  { id:"work",      name:"仕事",         color:"#C0766A", emoji:"💼" },
-  { id:"private",   name:"プライベート", color:"#5FA88A", emoji:"🌿" },
-];
-
-const DEFAULT_CL_CATS = [
-  { id:"cl_morning", name:"朝の持ち物", color:"#7BAFD4", emoji:"🎒" },
-  { id:"cl_work",    name:"仕事グッズ", color:"#C0766A", emoji:"💻" },
-  { id:"cl_night",   name:"夜の準備",   color:"#8F87C8", emoji:"🌙" },
-];
-
-const DEFAULT_TASKS = [
-  { id:"t1", title:"メールチェック",   catId:"morning",   done:false, due:"", ts:1 },
-  { id:"t2", title:"企画書を仕上げる", catId:"work",      done:false, due:"", ts:2 },
-  { id:"t3", title:"ランチ予約",       catId:"afternoon", done:true,  due:"", ts:3 },
-  { id:"t4", title:"SNS投稿スケジュール確認", catId:"work", done:false, due:"", ts:4 },
-];
-
-const DEFAULT_CL = [
-  { id:"c1", title:"スマホ充電器", clCatId:"cl_morning", checked:false },
-  { id:"c2", title:"財布・カード", clCatId:"cl_morning", checked:false },
-  { id:"c3", title:"薬を飲む",     clCatId:"cl_morning", checked:true  },
-  { id:"c4", title:"PC・充電器",   clCatId:"cl_work",    checked:false },
-  { id:"c5", title:"手帳・ペン",   clCatId:"cl_work",    checked:false },
-  { id:"c6", title:"翌日の服を用意",clCatId:"cl_night",  checked:false },
-];
+const DEFAULTS = {
+  ja: {
+    tCats: [
+      { id:"morning",   name:"午前",         color:"#7BAFD4", emoji:"🌤" },
+      { id:"afternoon", name:"午後",         color:"#C8A85A", emoji:"☀️" },
+      { id:"work",      name:"仕事",         color:"#C0766A", emoji:"💼" },
+      { id:"private",   name:"プライベート", color:"#5FA88A", emoji:"🌿" },
+    ],
+    cCats: [
+      { id:"cl_morning", name:"朝の持ち物", color:"#7BAFD4", emoji:"🎒" },
+      { id:"cl_work",    name:"仕事グッズ", color:"#C0766A", emoji:"💻" },
+      { id:"cl_night",   name:"夜の準備",   color:"#8F87C8", emoji:"🌙" },
+    ],
+    tasks: [
+      { id:"t1", title:"メールチェック",         catId:"morning",   done:false, due:"", ts:1 },
+      { id:"t2", title:"企画書を仕上げる",       catId:"work",      done:false, due:"", ts:2 },
+      { id:"t3", title:"ランチ予約",             catId:"afternoon", done:true,  due:"", ts:3 },
+      { id:"t4", title:"SNS投稿スケジュール確認", catId:"work",     done:false, due:"", ts:4 },
+    ],
+    clItems: [
+      { id:"c1", title:"スマホ充電器",   clCatId:"cl_morning", checked:false },
+      { id:"c2", title:"財布・カード",   clCatId:"cl_morning", checked:false },
+      { id:"c3", title:"薬を飲む",       clCatId:"cl_morning", checked:true  },
+      { id:"c4", title:"PC・充電器",     clCatId:"cl_work",    checked:false },
+      { id:"c5", title:"手帳・ペン",     clCatId:"cl_work",    checked:false },
+      { id:"c6", title:"翌日の服を用意", clCatId:"cl_night",   checked:false },
+    ],
+  },
+  en: {
+    tCats: [
+      { id:"morning",   name:"Morning", color:"#7BAFD4", emoji:"🌤" },
+      { id:"afternoon", name:"Afternoon", color:"#C8A85A", emoji:"☀️" },
+      { id:"work",      name:"Work",    color:"#C0766A", emoji:"💼" },
+      { id:"private",   name:"Personal", color:"#5FA88A", emoji:"🌿" },
+    ],
+    cCats: [
+      { id:"cl_morning", name:"Morning bag", color:"#7BAFD4", emoji:"🎒" },
+      { id:"cl_work",    name:"Work gear",   color:"#C0766A", emoji:"💻" },
+      { id:"cl_night",   name:"Night prep",  color:"#8F87C8", emoji:"🌙" },
+    ],
+    tasks: [
+      { id:"t1", title:"Check emails",        catId:"morning",   done:false, due:"", ts:1 },
+      { id:"t2", title:"Finish the proposal", catId:"work",      done:false, due:"", ts:2 },
+      { id:"t3", title:"Book lunch",          catId:"afternoon", done:true,  due:"", ts:3 },
+      { id:"t4", title:"Review post schedule", catId:"work",     done:false, due:"", ts:4 },
+    ],
+    clItems: [
+      { id:"c1", title:"Phone charger", clCatId:"cl_morning", checked:false },
+      { id:"c2", title:"Wallet & cards", clCatId:"cl_morning", checked:false },
+      { id:"c3", title:"Take medication", clCatId:"cl_morning", checked:true  },
+      { id:"c4", title:"Laptop & charger", clCatId:"cl_work",  checked:false },
+      { id:"c5", title:"Notebook & pen",  clCatId:"cl_work",   checked:false },
+      { id:"c6", title:"Prep tomorrow's clothes", clCatId:"cl_night", checked:false },
+    ],
+  },
+};
 
 const uid   = () => Math.random().toString(36).slice(2,9);
 const today = () => new Date().toISOString().slice(0,10);
@@ -408,10 +436,11 @@ function load(key, fallback) {
 export default function App() {
   const [lang, setLang]       = useState(()=>load("tb_lang", "ja"));
   const [tab, setTab]         = useState("tasks");
-  const [tasks, setTasks]     = useState(()=>load("tb_tasks",   DEFAULT_TASKS));
-  const [clItems, setClItems] = useState(()=>load("tb_clItems", DEFAULT_CL));
-  const [tCats, setTCats]     = useState(()=>load("tb_tCats",   DEFAULT_TASK_CATS));
-  const [cCats, setCCats]     = useState(()=>load("tb_cCats",   DEFAULT_CL_CATS));
+  // 初回起動時の言語設定に合わせてサンプルデータを選択
+  const [tasks, setTasks]     = useState(()=>{ const l=load("tb_lang","ja"); return load("tb_tasks",   DEFAULTS[l]?.tasks   || DEFAULTS.ja.tasks);   });
+  const [clItems, setClItems] = useState(()=>{ const l=load("tb_lang","ja"); return load("tb_clItems", DEFAULTS[l]?.clItems || DEFAULTS.ja.clItems); });
+  const [tCats, setTCats]     = useState(()=>{ const l=load("tb_lang","ja"); return load("tb_tCats",   DEFAULTS[l]?.tCats   || DEFAULTS.ja.tCats);   });
+  const [cCats, setCCats]     = useState(()=>{ const l=load("tb_lang","ja"); return load("tb_cCats",   DEFAULTS[l]?.cCats   || DEFAULTS.ja.cCats);   });
 
   // 日付は state で管理し、0:00 に自動更新
   const [now, setNow] = useState(new Date());
