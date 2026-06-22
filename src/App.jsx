@@ -237,6 +237,18 @@ const CAT_NAMES = {
   },
 };
 
+// デフォルト項目IDに対応する言語別タイトル（言語切替時に自動更新）
+const ITEM_NAMES = {
+  ja: {
+    t1:"メールチェック", t2:"企画書を仕上げる", t3:"ランチ予約", t4:"SNS投稿スケジュール確認",
+    c1:"スマホ充電器", c2:"財布・カード", c3:"薬を飲む", c4:"PC・充電器", c5:"手帳・ペン", c6:"翌日の服を用意",
+  },
+  en: {
+    t1:"Check emails", t2:"Finish proposal", t3:"Book lunch", t4:"Check post schedule",
+    c1:"Phone charger", c2:"Wallet & cards", c3:"Take meds", c4:"Laptop & charger", c5:"Notebook & pen", c6:"Prep clothes",
+  },
+};
+
 const uid   = () => Math.random().toString(36).slice(2,9);
 const today = () => new Date().toISOString().slice(0,10);
 const fmtD  = d => { if(!d) return ""; const [,m,day]=d.split("-"); return `${+m}/${+day}`; };
@@ -676,8 +688,11 @@ export default function App() {
                     <button key={l} onClick={()=>{
                       setLang(l);
                       const names = CAT_NAMES[l];
+                      const items = ITEM_NAMES[l];
                       setTCats(cs => cs.map(c => names[c.id] ? {...c, name:names[c.id]} : c));
                       setCCats(cs => cs.map(c => names[c.id] ? {...c, name:names[c.id]} : c));
+                      setTasks(ts => ts.map(t => items[t.id] ? {...t, title:items[t.id]} : t));
+                      setClItems(cs => cs.map(c => items[c.id] ? {...c, title:items[c.id]} : c));
                     }} style={{ padding:"4px 12px", borderRadius:20, border: lang===l ? "none" : "1px solid #E0DCF0", background: lang===l ? "#7472A8" : "transparent", color: lang===l ? "#fff" : "#C0B8CC", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
                       {l==="ja" ? "🇯🇵 JP" : "🇺🇸 EN"}
                     </button>
