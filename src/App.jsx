@@ -90,6 +90,9 @@ const TRANSLATIONS = {
     add_cat: "＋ カテゴリを追加",
     no_cats_yet: "カテゴリがありません — 下のボタンから追加してください",
     no_tasks_today: "今日のタスクはありません ✦",
+    sec_cl_repeat: "チェックリスト 繰り返し設定",
+    repeat_daily: "毎日リセット",
+    repeat_once: "1回のみ",
     fmt_header: (m, d) => `${m}月${d}日 🧠`,
     fmt_filter_hdr: (m, d) => `${m}月${d}日 📅`,
   },
@@ -155,6 +158,9 @@ const TRANSLATIONS = {
     add_cat: "+ Add Category",
     no_cats_yet: "No categories yet — add one below",
     no_tasks_today: "No tasks for today ✦",
+    sec_cl_repeat: "Checklist Repeat Settings",
+    repeat_daily: "Daily reset",
+    repeat_once: "Once",
     fmt_header: (m, d) => `${m}/${d} 🧠`,
     fmt_filter_hdr: (m, d) => `${m}/${d} 📅`,
   },
@@ -430,7 +436,7 @@ function CalendarView({ tasks, taskCats, onSelectDay, t }) {
               style={{ minHeight:48, padding:"6px 4px", background:isTo?"#7472A818":"transparent", borderRight:isLastCol?"none":"1px solid #E4E2EA", borderBottom:"1px solid #E4E2EA", cursor:"pointer", transition:"background 0.1s", borderLeft:isTo?"2px solid #7472A8":"none" }}>
               <div style={{ textAlign:"center", fontSize:12, fontWeight:isTo?800:400, color:isTo?"#7472A8":dow===0?"#C07070":dow===6?"#7BAFD4":"#2A2840" }}>{d}</div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:2, justifyContent:"center", marginTop:3 }}>
-                {its.slice(0,4).map(t=>{ const c=taskCats.find(c=>c.id===t.catId); return <div key={t.id} style={{ width:5,height:5,background:c?.color||"#ccc" }}/>; })}
+                {its.slice(0,4).map(tk=>{ const c=taskCats.find(c=>c.id===tk.catId); return <div key={tk.id} style={{ width:6,height:6,borderRadius:"50%",background:c?.color||"#ccc",flexShrink:0 }}/>; })}
               </div>
             </div>
           );
@@ -489,6 +495,16 @@ export default function App() {
   const [fCCat,  setFCCat]  = useState({ name:"", color:PALETTE.muted[3].hex, emoji:"📦" });
   const [fECat,  setFECat]  = useState({ name:"", color:"", emoji:"" });
   const [editCatType, setEditCatType] = useState("task");
+  // チェックリスト毎日リセット（日付変わったとき repeat:"daily" のものをリセット）
+  const [lastResetDate, setLastResetDate] = useState(()=>load("tb_last_reset", ""));
+  useEffect(()=>{ localStorage.setItem("tb_last_reset", JSON.stringify(lastResetDate)); }, [lastResetDate]);
+  useEffect(() => {
+    if(lastResetDate !== todayStr) {
+      setClItems(cs => cs.map(c => (c.repeat ?? "daily") === "daily" ? {...c, checked:false} : c));
+      setLastResetDate(todayStr);
+    }
+  }, [todayStr]);
+
   const [notifBanner,   setNotifBanner]   = useState(null);
   const [notifPerm,     setNotifPerm]     = useState(typeof Notification !== "undefined" ? Notification.permission : "default");
   const [notifEnabled,  setNotifEnabled]  = useState(()=>load("tb_notif_enabled", true));
@@ -688,6 +704,27 @@ export default function App() {
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
               <SortableCatList cats={tCats} onReorder={setTCats} onEdit={openEditCat} onDelete={id=>setTCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
               <DashedAdd onClick={()=>setMAddTCat(true)} label={t("add_cat")}/>
+              <SectionHead style={{marginTop:24}}>{t("sec_cl_repeat")}</SectionHead>
+              {cCats.map(cat=>{
+                const items = clItems.filter(c=>c.clCatId===cat.id);
+                if(items.length===0) return null;
+                return (
+                  <div key={cat.id} style={{ marginBottom:12 }}>
+                    <div style={{ fontSize:12, fontWeight:800, color:cat.color, marginBottom:6, display:"flex", alignItems:"center", gap:5 }}><span>{cat.emoji}</span><span>{cat.name}</span></div>
+                    {items.map(item=>(
+                      <div key={item.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", background:"#FFFCF8", borderRadius:10, marginBottom:4, borderLeft:`3px solid ${cat.color}` }}>
+                        <span style={{ flex:1, fontSize:13, color:"#0F0E2A" }}>{item.title}</span>
+                        <button onClick={()=>setClItems(cs=>cs.map(c=>c.id===item.id?{...c, repeat:(c.repeat??"daily")==="daily"?"once":"daily"}:c))}
+                          style={{ padding:"3px 12px", borderRadius:20, border:"none", cursor:"pointer", fontWeight:700, fontSize:11, fontFamily:"inherit",
+                            background:(item.repeat??"daily")==="daily"?"#EEF2FF":"#F3EFF8",
+                            color:(item.repeat??"daily")==="daily"?"#5472C8":"#B0A8C8" }}>
+                          {(item.repeat??"daily")==="daily" ? "🔄 "+t("repeat_daily") : "1️⃣ "+t("repeat_once")}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
               <SectionHead style={{marginTop:24}}>{t("sec_cl_cats")}</SectionHead>
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
               <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
