@@ -386,7 +386,7 @@ function TaskRow({ item, color, onToggle, onDelete, onEdit, t }) {
       <button onClick={handleToggle} style={{ width:24, height:24, borderRadius:8, flexShrink:0, border:`2.5px solid ${color}`, background:item.done?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.done?"scale(1.1)":"scale(1)", opacity:item.done?0.5:1 }}>
         {item.done && <span style={{ color:"#fff", fontSize:13, fontWeight:900, lineHeight:1 }}>✓</span>}
       </button>
-      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none", opacity:item.done?0.45:1, transition:"opacity 0.25s" }}>{item.title}</span>
+      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none", opacity:item.done?0.45:1, transition:"opacity 0.25s", textAlign:"center" }}>{item.title}</span>
       {item.due && <span style={{ fontSize:11, fontWeight:700, color:item.due<today()?"#FF6B6B":"#B0A8C8", background:item.due<today()?"#FF6B6B18":"#F3EFF8", padding:"2px 7px", borderRadius:8 }}>📅{fmtD(item.due)}</span>}
       {hov && (
         <div style={{ display:"flex", gap:2 }}>
@@ -413,7 +413,7 @@ function CheckRow({ item, color, onToggle, onDelete, t }) {
       <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.checked?"scale(1.1)":"scale(1)", opacity:item.checked?0.45:1 }}>
         {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
       </button>
-      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1, transition:"opacity 0.25s" }}>{item.title}</span>
+      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1, transition:"opacity 0.25s", textAlign:"center" }}>{item.title}</span>
       {hov && <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>}
     </div>
   );
