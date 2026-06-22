@@ -51,6 +51,7 @@ const TRANSLATIONS = {
     drag_hint: "行をドラッグして順番を変更できます",
     notif_title: "期限タスクの通知",
     notif_granted: "✦ 通知が有効です",
+    notif_off: "通知がオフになっています",
     notif_denied: "🚫 ブラウザ設定から許可してください",
     notif_default: "アプリ起動時に期限タスクをお知らせします",
     btn_allow: "許可する",
@@ -87,6 +88,8 @@ const TRANSLATIONS = {
     notif_banner_title: "今日が期限のタスクがあります",
     notif_banner_body: t => `今日が期限：${t}`,
     add_cat: "＋ カテゴリを追加",
+    no_cats_yet: "カテゴリがありません — 下のボタンから追加してください",
+    no_tasks_today: "今日のタスクはありません ✦",
     fmt_header: (m, d) => `${m}月${d}日 🧠`,
     fmt_filter_hdr: (m, d) => `${m}月${d}日 📅`,
   },
@@ -113,6 +116,7 @@ const TRANSLATIONS = {
     drag_hint: "Drag rows to reorder",
     notif_title: "Due task alerts",
     notif_granted: "✦ Notifications enabled",
+    notif_off: "Notifications are off",
     notif_denied: "🚫 Enable in browser settings",
     notif_default: "You'll be alerted about due tasks on launch",
     btn_allow: "Allow",
@@ -149,6 +153,8 @@ const TRANSLATIONS = {
     notif_banner_title: "Tasks due today",
     notif_banner_body: t => `Due today: ${t}`,
     add_cat: "+ Add Category",
+    no_cats_yet: "No categories yet — add one below",
+    no_tasks_today: "No tasks for today ✦",
     fmt_header: (m, d) => `${m}/${d} 🧠`,
     fmt_filter_hdr: (m, d) => `${m}/${d} 📅`,
   },
@@ -407,6 +413,19 @@ export default function App() {
   const [tCats, setTCats]     = useState(()=>load("tb_tCats",   DEFAULT_TASK_CATS));
   const [cCats, setCCats]     = useState(()=>load("tb_cCats",   DEFAULT_CL_CATS));
 
+  // 日付は state で管理し、0:00 に自動更新
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const scheduleNext = () => {
+      const n = new Date();
+      const msToMidnight = new Date(n.getFullYear(), n.getMonth(), n.getDate()+1, 0, 0, 0) - n + 100;
+      return setTimeout(() => { setNow(new Date()); scheduleNext(); }, msToMidnight);
+    };
+    const timer = scheduleNext();
+    return () => clearTimeout(timer);
+  }, []);
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+
   const t = key => TRANSLATIONS[lang][key];
 
   useEffect(()=>{ localStorage.setItem("tb_lang",    JSON.stringify(lang));    }, [lang]);
@@ -423,15 +442,17 @@ export default function App() {
   const [mAddCCat, setMAddCCat] = useState(false);
   const [mEditT,   setMEditT]   = useState(null);
   const [mEditCat, setMEditCat] = useState(null);
-  const [fTask,  setFTask]  = useState({ title:"", catId:tCats[0].id, due:"" });
-  const [fCl,    setFCl]    = useState({ title:"", clCatId:cCats[0].id });
+  const [fTask,  setFTask]  = useState({ title:"", catId:tCats[0]?.id||"", due:"" });
+  const [fCl,    setFCl]    = useState({ title:"", clCatId:cCats[0]?.id||"" });
   const [fTCat,  setFTCat]  = useState({ name:"", color:PALETTE.muted[0].hex, emoji:"📌" });
   const [fCCat,  setFCCat]  = useState({ name:"", color:PALETTE.muted[3].hex, emoji:"📦" });
   const [fECat,  setFECat]  = useState({ name:"", color:"", emoji:"" });
   const [editCatType, setEditCatType] = useState("task");
-  const [notifBanner, setNotifBanner] = useState(null);
-  const [notifPerm,   setNotifPerm]   = useState(typeof Notification !== "undefined" ? Notification.permission : "default");
-  const notifiedRef = useRef(false);
+  const [notifBanner,   setNotifBanner]   = useState(null);
+  const [notifPerm,     setNotifPerm]     = useState(typeof Notification !== "undefined" ? Notification.permission : "default");
+  const [notifEnabled,  setNotifEnabled]  = useState(()=>load("tb_notif_enabled", true));
+  useEffect(()=>{ localStorage.setItem("tb_notif_enabled", JSON.stringify(notifEnabled)); }, [notifEnabled]);
+  const notifiedDateRef = useRef("");
 
   const toggleTask  = id => setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
   const deleteTask  = id => setTasks(ts=>ts.filter(t=>t.id!==id));
@@ -459,23 +480,23 @@ export default function App() {
   const jumpToDay = key => { setFilterDate(key); setFilterCat("all"); setTab("tasks"); };
   const clearDateFilter = () => setFilterDate(null);
 
+  // todayStr が変わった瞬間（日付変更）または初回に通知を発火
   useEffect(() => {
-    if(notifiedRef.current) return;
-    const todayKey = today();
-    const dueTasks = tasks.filter(t => !t.done && t.due === todayKey);
+    if(notifiedDateRef.current === todayStr) return;
+    notifiedDateRef.current = todayStr;
+    const dueTasks = tasks.filter(tk => !tk.done && tk.due === todayStr);
     if(dueTasks.length === 0) return;
-    notifiedRef.current = true;
     setNotifBanner(dueTasks);
-    if(typeof Notification === "undefined") return;
+    if(!notifEnabled || typeof Notification === "undefined") return;
     if(Notification.permission === "granted") {
-      dueTasks.forEach(tk => new Notification("Today's Brain 🧠", { body: t("notif_banner_body")(tk.title), icon:"https://fav.farm/🧠" }));
+      dueTasks.forEach(tk => new Notification("Today's Brain 🧠", { body: t("notif_banner_body")(tk.title), icon:"/icon-192.png" }));
     } else if(Notification.permission === "default") {
       Notification.requestPermission().then(perm => {
         setNotifPerm(perm);
-        if(perm === "granted") dueTasks.forEach(tk => new Notification("Today's Brain 🧠", { body: t("notif_banner_body")(tk.title), icon:"https://fav.farm/🧠" }));
+        if(perm === "granted") dueTasks.forEach(tk => new Notification("Today's Brain 🧠", { body: t("notif_banner_body")(tk.title), icon:"/icon-192.png" }));
       });
     }
-  }, [tasks]);
+  }, [todayStr, tasks]);
 
   const NAV = [
     { id:"tasks",     icon:"☑️",  label: t("nav_tasks")     },
@@ -485,15 +506,18 @@ export default function App() {
   ];
 
   const visibleCats = filterCat==="all" ? tCats : tCats.filter(c=>c.id===filterCat);
-  const now = new Date();
+  // デフォルト表示: 今日のタスク（期限=今日 or 期限なし）。カレンダー選択時: その日のみ
+  const activeDateFilter = filterDate
+    ? (tk) => tk.due === filterDate
+    : (tk) => tk.due === "" || tk.due === todayStr;
   const hdr = filterDate
     ? t("fmt_filter_hdr")(+filterDate.split("-")[1], +filterDate.split("-")[2])
     : t("fmt_header")(now.getMonth()+1, now.getDate());
-  const totalTasks = tasks.filter(t=>!t.done).length;
+  const totalTasks = tasks.filter(tk => !tk.done && activeDateFilter(tk) && (filterCat==="all" || tk.catId===filterCat)).length;
 
   return (
-    <div style={{ minHeight:"100vh", background:"linear-gradient(160deg,#F4F3F8 0%,#FAFAF8 60%,#F3F6F9 100%)", fontFamily:"'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif", display:"flex", justifyContent:"center" }}>
-      <div style={{ width:"100%", maxWidth:480, minHeight:"100vh", display:"flex", flexDirection:"column", position:"relative" }}>
+    <div style={{ position:"fixed", inset:0, background:"linear-gradient(160deg,#F4F3F8 0%,#FAFAF8 60%,#F3F6F9 100%)", fontFamily:"'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif", display:"flex", justifyContent:"center", overflow:"hidden" }}>
+      <div style={{ width:"100%", maxWidth:480, height:"100%", display:"flex", flexDirection:"column", position:"relative" }}>
 
         {/* HEADER */}
         <div style={{ background:"rgba(252,252,250,0.95)", backdropFilter:"blur(12px)", padding:"16px 20px 12px", borderBottom:"1px solid #E8E6EC", position:"sticky", top:0, zIndex:50 }}>
@@ -506,7 +530,7 @@ export default function App() {
             </div>
             <div style={{ display:"flex", gap:6, alignItems:"center" }}>
               {filterDate && <button onClick={clearDateFilter} style={{ padding:"6px 11px", borderRadius:20, border:"none", background:"#F3EFF8", color:"#9B8FC8", fontWeight:800, fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>{t("btn_today")}</button>}
-              {tab==="tasks" && <button onClick={()=>{ const preselect=filterCat!=="all"?filterCat:tCats[0]?.id||""; setFTask({title:"",catId:preselect,due:""}); setMAddTask(true); }} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#7472A8", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #7472A820" }}>{t("btn_add_task")}</button>}
+              {tab==="tasks" && <button onClick={()=>{ const preselect=filterCat!=="all"?filterCat:tCats[0]?.id||""; setFTask({title:"",catId:preselect,due:filterDate||""}); setMAddTask(true); }} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#7472A8", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #7472A820" }}>{t("btn_add_task")}</button>}
               {tab==="checklist" && <button onClick={()=>setMAddCl(true)} style={{ padding:"8px 16px", borderRadius:20, border:"none", background:"#C8944A", color:"#fff", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 2px 8px #C8944A20" }}>{t("btn_add")}</button>}
             </div>
           </div>
@@ -535,15 +559,29 @@ export default function App() {
         )}
 
         {/* CONTENT */}
-        <div style={{ flex:1, padding:"16px 14px 88px", overflowY:"auto" }}>
+        <div style={{ flex:1, padding:"16px 14px 88px", overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
           {tab==="tasks" && (
             <div>
               {filterDate && <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:10, fontWeight:700 }}>{t("filter_date_label")(+filterDate.split("-")[1], +filterDate.split("-")[2])}</div>}
-              {visibleCats.map(cat=>{
-                const items = tasks.filter(tk=>tk.catId===cat.id).filter(tk=>!filterDate||tk.due===filterDate).sort((a,b)=>a.done-b.done||a.ts-b.ts);
-                if(filterDate && items.length===0) return null;
-                return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} t={t}/>;
-              })}
+              {tCats.length===0 ? (
+                <div style={{ textAlign:"center", padding:"60px 0", color:"#C0B8CC" }}>
+                  <div style={{ fontSize:40 }}>📂</div>
+                  <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>{t("no_cats_yet")}</div>
+                  <button onClick={()=>setMAddTCat(true)} style={{ marginTop:16, padding:"10px 24px", borderRadius:20, border:"none", background:"#7472A8", color:"#fff", fontWeight:800, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>{t("add_cat")}</button>
+                </div>
+              ) : (
+                visibleCats.map(cat=>{
+                  const items = tasks.filter(tk=>tk.catId===cat.id).filter(activeDateFilter).sort((a,b)=>a.done-b.done||a.ts-b.ts);
+                  if(items.length===0 && filterDate) return null;
+                  return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} t={t}/>;
+                })
+              )}
+              {tCats.length>0 && tasks.filter(activeDateFilter).length===0 && !filterDate && (
+                <div style={{ textAlign:"center", padding:"40px 0", color:"#C0B8CC", fontSize:13 }}>
+                  <div style={{ fontSize:36 }}>✨</div>
+                  <div style={{ marginTop:8, fontWeight:700 }}>{t("no_tasks_today")}</div>
+                </div>
+              )}
               {filterDate && tasks.filter(tk=>tk.due===filterDate).length===0 && (
                 <div style={{ textAlign:"center", padding:"60px 0", color:"#C0B8CC" }}>
                   <div style={{ fontSize:40 }}>🗓</div>
@@ -555,30 +593,50 @@ export default function App() {
           {tab==="checklist" && (
             <div>
               <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:14, fontWeight:700 }}>{t("cl_subtitle")}</div>
-              {cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} t={t}/>; })}
+              {cCats.length===0 ? (
+                <div style={{ textAlign:"center", padding:"40px 0", color:"#C0B8CC" }}>
+                  <div style={{ fontSize:36 }}>📂</div>
+                  <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>{t("no_cats_yet")}</div>
+                </div>
+              ) : (
+                cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} t={t}/>; })
+              )}
               <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>{t("add_cat")}</button>
             </div>
           )}
           {tab==="calendar" && <div style={{ border:"1px solid #E4E2EA" }}><CalendarView tasks={tasks} taskCats={tCats} onSelectDay={jumpToDay} t={t}/></div>}
           {tab==="settings" && (
             <div>
-              <SectionHead>{t("sec_lang")}</SectionHead>
-              <div style={{ display:"flex", gap:8, marginBottom:20 }}>
-                {["ja","en"].map(l=>(
-                  <button key={l} onClick={()=>setLang(l)} style={{ flex:1, padding:"10px", borderRadius:12, border: lang===l ? "2px solid #7472A8" : "2px solid #E0DCF0", background: lang===l ? "#7472A8" : "#FFFCF8", color: lang===l ? "#fff" : "#9B8FC8", fontWeight:800, fontSize:14, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
-                    {l==="ja" ? "🇯🇵 日本語" : "🇺🇸 English"}
-                  </button>
-                ))}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+                <span style={{ fontSize:12, fontWeight:700, color:"#B0A8C8", letterSpacing:0.5 }}>{t("sec_lang")}</span>
+                <div style={{ display:"flex", gap:6 }}>
+                  {["ja","en"].map(l=>(
+                    <button key={l} onClick={()=>setLang(l)} style={{ padding:"4px 12px", borderRadius:20, border: lang===l ? "none" : "1px solid #E0DCF0", background: lang===l ? "#7472A8" : "transparent", color: lang===l ? "#fff" : "#C0B8CC", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
+                      {l==="ja" ? "🇯🇵 JP" : "🇺🇸 EN"}
+                    </button>
+                  ))}
+                </div>
               </div>
               <SectionHead>{t("sec_notif")}</SectionHead>
               <div style={{ background:"#FFFCF8", borderRadius:14, padding:"12px 16px", marginBottom:20, boxShadow:"0 1px 4px #0F0E2A0a", display:"flex", alignItems:"center", gap:12 }}>
                 <span style={{ fontSize:24 }}>🔔</span>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:13, fontWeight:800, color:"#0F0E2A" }}>{t("notif_title")}</div>
-                  <div style={{ fontSize:11, color:"#B0A8C8", marginTop:2 }}>{notifPerm==="granted"?t("notif_granted"):notifPerm==="denied"?t("notif_denied"):t("notif_default")}</div>
+                  <div style={{ fontSize:11, color:"#B0A8C8", marginTop:2 }}>
+                    {notifPerm==="denied" ? t("notif_denied")
+                      : notifPerm==="granted" && notifEnabled ? t("notif_granted")
+                      : notifPerm==="granted" && !notifEnabled ? t("notif_off")
+                      : t("notif_default")}
+                  </div>
                 </div>
-                {notifPerm==="default" && <button onClick={()=>{ Notification.requestPermission().then(p=>setNotifPerm(p)); }} style={{ padding:"7px 14px", borderRadius:20, border:"none", background:"linear-gradient(135deg,#7c6ef4,#A29BFE)", color:"#fff", fontWeight:800, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>{t("btn_allow")}</button>}
-                {notifPerm==="granted" && <span style={{ fontSize:20 }}>✅</span>}
+                {notifPerm==="default" && (
+                  <button onClick={()=>{ Notification.requestPermission().then(p=>{ setNotifPerm(p); if(p==="granted") setNotifEnabled(true); }); }} style={{ padding:"7px 14px", borderRadius:20, border:"none", background:"linear-gradient(135deg,#7c6ef4,#A29BFE)", color:"#fff", fontWeight:800, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>{t("btn_allow")}</button>
+                )}
+                {notifPerm==="granted" && (
+                  <button onClick={()=>setNotifEnabled(v=>!v)} style={{ padding:"7px 14px", borderRadius:20, border:"none", background: notifEnabled ? "#E8F5E9" : "#F3EFF8", color: notifEnabled ? "#388E3C" : "#B0A8C8", fontWeight:800, fontSize:12, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>
+                    {notifEnabled ? "✅ ON" : "🔕 OFF"}
+                  </button>
+                )}
               </div>
               <SectionHead>{t("sec_task_cats")}</SectionHead>
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
