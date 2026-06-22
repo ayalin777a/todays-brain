@@ -344,7 +344,7 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAd
   const pct = total===0 ? 0 : Math.round(done/total*100);
   return (
     <div style={{ borderRadius:20, overflow:"hidden", marginBottom:16, boxShadow: allDone ? "0 1px 4px #0F0E2A08" : "0 2px 10px #0F0E2A0c", transition:"box-shadow 0.3s" }}>
-      <div style={{ background:`linear-gradient(100deg,${cat.color}cc,${mix(cat.color,0.5)}aa)`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8 }}>
+      <div style={{ background:`linear-gradient(100deg,${cat.color}ee,${mix(cat.color,0.4)}cc)`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8 }}>
         <span style={{ fontSize:18 }}>{cat.emoji}</span>
         <span style={{ fontWeight:900, fontSize:15, color:"#fff", flex:1, letterSpacing:0.3 }}>{cat.name}</span>
         <div style={{ background: allDone ? "#fff" : "rgba(255,255,255,0.3)", borderRadius:20, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
