@@ -179,13 +179,13 @@ const TRANSLATIONS = {
 const DEFAULTS = {
   ja: {
     tCats: [
-      { id:"morning",   name:"午前",         color:"#FF7A00", emoji:"🌤" },
+      { id:"morning",   name:"午前",         color:"#C8A85A", emoji:"🌤" },
       { id:"afternoon", name:"午後",         color:"#7BAFD4", emoji:"☀️" },
-      { id:"work",      name:"仕事",         color:"#E87878", emoji:"💼" },
+      { id:"work",      name:"仕事",         color:"#C87878", emoji:"💼" },
       { id:"private",   name:"プライベート", color:"#5FA88A", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"朝の持ち物", color:"#FF6B35", emoji:"🎒" },
+      { id:"cl_morning", name:"朝の持ち物", color:"#C8944A", emoji:"🎒" },
       { id:"cl_work",    name:"仕事グッズ", color:"#8A9BAA", emoji:"💻" },
       { id:"cl_night",   name:"夜の準備",   color:"#8F87C8", emoji:"🌙" },
     ],
@@ -206,13 +206,13 @@ const DEFAULTS = {
   },
   en: {
     tCats: [
-      { id:"morning",   name:"Morning",   color:"#FF7A00", emoji:"🌤" },
+      { id:"morning",   name:"Morning",   color:"#C8A85A", emoji:"🌤" },
       { id:"afternoon", name:"Afternoon", color:"#7BAFD4", emoji:"☀️" },
-      { id:"work",      name:"Work",      color:"#E87878", emoji:"💼" },
+      { id:"work",      name:"Work",      color:"#C87878", emoji:"💼" },
       { id:"private",   name:"Personal",  color:"#5FA88A", emoji:"🌿" },
     ],
     cCats: [
-      { id:"cl_morning", name:"Morning bag", color:"#FF6B35", emoji:"🎒" },
+      { id:"cl_morning", name:"Morning bag", color:"#C8944A", emoji:"🎒" },
       { id:"cl_work",    name:"Work gear",   color:"#8A9BAA", emoji:"💻" },
       { id:"cl_night",   name:"Night prep",  color:"#8F87C8", emoji:"🌙" },
     ],
