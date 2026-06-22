@@ -747,7 +747,7 @@ export default function App() {
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
               <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
               <DashedAdd onClick={()=>setMAddCCat(true)} label={t("add_cat")}/>
-              <div style={{ marginTop:24, borderTop:"1px solid #F0ECF8", paddingTop:16, display:"flex", justifyContent:"center" }}>
+              <div style={{ marginTop:24, borderTop:"1px solid #F0ECF8", paddingTop:16, display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
                 <button onClick={()=>{
                   if(!window.confirm(t("confirm_reset"))) return;
                   const d = DEFAULTS[lang] || DEFAULTS.ja;
@@ -755,6 +755,9 @@ export default function App() {
                 }} style={{ padding:"6px 16px", borderRadius:20, border:"1px solid #FFD0D0", background:"transparent", color:"#FFB0B0", fontWeight:700, cursor:"pointer", fontFamily:"inherit", fontSize:11 }}>
                   {t("btn_reset")}
                 </button>
+                <a href="/privacy.html" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:"#B0A8C8", textDecoration:"none", letterSpacing:0.3 }}>
+                  {lang==="en" ? "Privacy Policy" : "プライバシーポリシー"}
+                </a>
               </div>
             </div>
           )}
