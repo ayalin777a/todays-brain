@@ -217,6 +217,18 @@ const DEFAULTS = {
   },
 };
 
+// デフォルトカテゴリIDに対応する言語別名前（言語切替時に自動更新）
+const CAT_NAMES = {
+  ja: {
+    morning:"午前", afternoon:"午後", work:"仕事", private:"プライベート",
+    cl_morning:"朝の持ち物", cl_work:"仕事グッズ", cl_night:"夜の準備",
+  },
+  en: {
+    morning:"Morning", afternoon:"Afternoon", work:"Work", private:"Personal",
+    cl_morning:"Morning Bag", cl_work:"Work Gear", cl_night:"Night Prep",
+  },
+};
+
 const uid   = () => Math.random().toString(36).slice(2,9);
 const today = () => new Date().toISOString().slice(0,10);
 const fmtD  = d => { if(!d) return ""; const [,m,day]=d.split("-"); return `${+m}/${+day}`; };
@@ -640,7 +652,12 @@ export default function App() {
                 <span style={{ fontSize:12, fontWeight:700, color:"#B0A8C8", letterSpacing:0.5 }}>{t("sec_lang")}</span>
                 <div style={{ display:"flex", gap:6 }}>
                   {["ja","en"].map(l=>(
-                    <button key={l} onClick={()=>setLang(l)} style={{ padding:"4px 12px", borderRadius:20, border: lang===l ? "none" : "1px solid #E0DCF0", background: lang===l ? "#7472A8" : "transparent", color: lang===l ? "#fff" : "#C0B8CC", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
+                    <button key={l} onClick={()=>{
+                      setLang(l);
+                      const names = CAT_NAMES[l];
+                      setTCats(cs => cs.map(c => names[c.id] ? {...c, name:names[c.id]} : c));
+                      setCCats(cs => cs.map(c => names[c.id] ? {...c, name:names[c.id]} : c));
+                    }} style={{ padding:"4px 12px", borderRadius:20, border: lang===l ? "none" : "1px solid #E0DCF0", background: lang===l ? "#7472A8" : "transparent", color: lang===l ? "#fff" : "#C0B8CC", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
                       {l==="ja" ? "🇯🇵 JP" : "🇺🇸 EN"}
                     </button>
                   ))}
