@@ -734,13 +734,12 @@ export default function App() {
               <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10, display:"flex", alignItems:"center", gap:4 }}><span>⠿</span><span>{t("drag_hint")}</span></div>
               <SortableCatList cats={cCats} onReorder={setCCats} onEdit={cat=>openEditCat(cat,"cl")} onDelete={id=>setCCats(cs=>cs.filter(c=>c.id!==id))} t={t}/>
               <DashedAdd onClick={()=>setMAddCCat(true)} label={t("add_cat")}/>
-              <div style={{ marginTop:32, borderTop:"1px solid #F0ECF8", paddingTop:20 }}>
-                <div style={{ fontSize:11, color:"#C0B8CC", fontWeight:700, marginBottom:10 }}>{t("sec_danger")}</div>
+              <div style={{ marginTop:24, borderTop:"1px solid #F0ECF8", paddingTop:16, display:"flex", justifyContent:"center" }}>
                 <button onClick={()=>{
                   if(!window.confirm(t("confirm_reset"))) return;
                   const d = DEFAULTS[lang] || DEFAULTS.ja;
                   setTasks(d.tasks); setClItems(d.clItems); setTCats(d.tCats); setCCats(d.cCats);
-                }} style={{ width:"100%", padding:"11px", borderRadius:14, border:"1.5px solid #FFD0D0", background:"transparent", color:"#FF8080", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>
+                }} style={{ padding:"6px 16px", borderRadius:20, border:"1px solid #FFD0D0", background:"transparent", color:"#FFB0B0", fontWeight:700, cursor:"pointer", fontFamily:"inherit", fontSize:11 }}>
                   {t("btn_reset")}
                 </button>
               </div>
