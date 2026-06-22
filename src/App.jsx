@@ -630,7 +630,7 @@ export default function App() {
           {tab==="tasks" && (
             <div style={{ display:"flex", gap:6, marginTop:12, overflowX:"auto", paddingBottom:2 }}>
               {[{id:"all",name:t("filter_all"),color:"#0F0E2A",emoji:""},...tCats].map(c=>(
-                <button key={c.id} onClick={()=>setFilterCat(c.id)} style={{ padding:"5px 13px", borderRadius:20, border:"none", fontSize:12, fontWeight:800, background:filterCat===c.id?(c.id==="all"?"#3A384A":c.color):(c.id==="all"?"#ECEAF2":c.color+"28"), color:filterCat===c.id?"#fff":(c.id==="all"?"#7472A8":c.color), cursor:"pointer", whiteSpace:"nowrap", fontFamily:"inherit", transition:"background 0.15s, color 0.15s" }}>{c.emoji} {c.name}</button>
+                <button key={c.id} onClick={()=>setFilterCat(c.id)} style={{ padding:"5px 13px", borderRadius:20, border: filterCat===c.id ? "none" : `1.5px solid ${c.id==="all"?"#B0A8C8":c.color+"88"}`, fontSize:12, fontWeight:800, background:filterCat===c.id?(c.id==="all"?"#3A384A":c.color):(c.id==="all"?"#ECEAF2":c.color+"18"), color:filterCat===c.id?"#fff":(c.id==="all"?"#7472A8":c.color), cursor:"pointer", whiteSpace:"nowrap", fontFamily:"inherit", transition:"background 0.15s, color 0.15s" }}>{c.emoji} {c.name}</button>
               ))}
             </div>
           )}
