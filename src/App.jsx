@@ -388,12 +388,10 @@ function TaskRow({ item, color, onToggle, onDelete, onEdit, t }) {
       </button>
       <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none", opacity:item.done?0.45:1, transition:"opacity 0.25s", paddingLeft:8 }}>{item.title}</span>
       {item.due && <span style={{ fontSize:11, fontWeight:700, color:item.due<today()?"#FF6B6B":"#B0A8C8", background:item.due<today()?"#FF6B6B18":"#F3EFF8", padding:"2px 7px", borderRadius:8 }}>📅{fmtD(item.due)}</span>}
-      {hov && (
-        <div style={{ display:"flex", gap:2 }}>
-          <button onClick={()=>onEdit(item)} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>{t("btn_edit")}</button>
-          <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
-        </div>
-      )}
+      <div style={{ display:"flex", gap:2, visibility:hov?"visible":"hidden", flexShrink:0 }}>
+        <button onClick={()=>onEdit(item)} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>{t("btn_edit")}</button>
+        <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
+      </div>
     </div>
   );
 }
