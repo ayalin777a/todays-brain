@@ -359,7 +359,7 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAd
           <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${cat.color},${mix(cat.color,-0.1)})`, transition:"width 0.4s cubic-bezier(.4,0,.2,1)" }}/>
         </div>
       )}
-      <div style={{ background:"#FFFCF8", padding:"8px 12px" }}>
+      <div style={{ background:"#FFFCF8", padding:"8px 4px" }}>
         {items.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>{t("no_tasks")}</div>}
         {items.map(item=>(
           isTask
