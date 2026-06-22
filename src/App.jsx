@@ -596,7 +596,7 @@ export default function App() {
   const totalTasks = tasks.filter(tk => !tk.done && activeDateFilter(tk) && (filterCat==="all" || tk.catId===filterCat)).length;
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"linear-gradient(160deg,#F4F3F8 0%,#FAFAF8 60%,#F3F6F9 100%)", fontFamily:"'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif", display:"flex", justifyContent:"center", overflow:"hidden" }}>
+    <div style={{ height:"100dvh", background:"linear-gradient(160deg,#F4F3F8 0%,#FAFAF8 60%,#F3F6F9 100%)", fontFamily:"'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif", display:"flex", justifyContent:"center", overflow:"hidden" }}>
       <div style={{ width:"100%", maxWidth:480, height:"100%", display:"flex", flexDirection:"column", position:"relative" }}>
 
         {/* HEADER */}
@@ -639,7 +639,7 @@ export default function App() {
         )}
 
         {/* CONTENT */}
-        <div style={{ flex:1, padding:"16px 14px 88px", overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
+        <div style={{ flex:1, padding:"16px 14px 24px", overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
           {tab==="tasks" && (
             <div>
               {filterDate && <div style={{ fontSize:12, color:"#B0A8C8", marginBottom:10, fontWeight:700 }}>{t("filter_date_label")(+filterDate.split("-")[1], +filterDate.split("-")[2])}</div>}
@@ -651,7 +651,7 @@ export default function App() {
                 </div>
               ) : (
                 visibleCats.map(cat=>{
-                  const items = tasks.filter(tk=>tk.catId===cat.id).filter(activeDateFilter).sort((a,b)=>a.done-b.done||a.ts-b.ts);
+                  const items = tasks.filter(tk=>tk.catId===cat.id).filter(activeDateFilter).sort((a,b)=>a.ts-b.ts);
                   if(items.length===0 && filterDate) return null;
                   return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} onAdd={()=>{ setFTask({title:"",catId:cat.id,due:filterDate||""}); setMAddTask(true); }} t={t}/>;
                 })
@@ -679,7 +679,7 @@ export default function App() {
                   <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>{t("no_cats_yet")}</div>
                 </div>
               ) : (
-                cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id).sort((a,b)=>a.checked-b.checked); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} onAdd={()=>{ setFCl({title:"",clCatId:cat.id,repeat:"daily"}); setMAddCl(true); }} t={t}/>; })
+                cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} onAdd={()=>{ setFCl({title:"",clCatId:cat.id,repeat:"daily"}); setMAddCl(true); }} t={t}/>; })
               )}
               <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>{t("add_cat")}</button>
             </div>
@@ -748,7 +748,7 @@ export default function App() {
         </div>
 
         {/* BOTTOM NAV */}
-        <div style={{ position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:480, background:"rgba(255,252,248,0.95)", borderTop:"1px solid #EDE8F8", display:"flex", zIndex:50, backdropFilter:"blur(12px)", paddingBottom:"env(safe-area-inset-bottom,0px)" }}>
+        <div style={{ flexShrink:0, background:"rgba(255,252,248,0.95)", borderTop:"1px solid #EDE8F8", display:"flex", zIndex:50, backdropFilter:"blur(12px)", paddingBottom:"env(safe-area-inset-bottom,0px)" }}>
           {NAV.map(n=>{ const active=tab===n.id; return (
             <button key={n.id} onClick={()=>setTab(n.id)} style={{ flex:1, padding:"11px 0 8px", border:"none", background:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:1 }}>
               <span style={{ fontSize:22, filter:active?"none":"grayscale(0.4) opacity(0.6)" }}>{n.icon}</span>
