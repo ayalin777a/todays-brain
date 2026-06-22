@@ -764,8 +764,8 @@ export default function App() {
         <div style={{ flexShrink:0, background:"rgba(255,252,248,0.95)", borderTop:"1px solid #EDE8F8", display:"flex", zIndex:50, backdropFilter:"blur(12px)", paddingBottom:"env(safe-area-inset-bottom,0px)" }}>
           {NAV.map(n=>{ const active=tab===n.id; return (
             <button key={n.id} onClick={()=>setTab(n.id)} style={{ flex:1, padding:"11px 0 8px", border:"none", background:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:1 }}>
-              <span style={{ fontSize:22, filter:active?"none":"grayscale(0.4) opacity(0.6)" }}>{n.icon}</span>
-              <span style={{ fontSize:9, fontWeight:active?900:600, color:active?"#7472A8":"#C0B8CC", letterSpacing:0.5 }}>{n.label}</span>
+              <span style={{ fontSize:22, filter:active?"none":"grayscale(0.2) opacity(0.85)" }}>{n.icon}</span>
+              <span style={{ fontSize:9, fontWeight:active?900:600, color:active?"#7472A8":"#6B6480", letterSpacing:0.5 }}>{n.label}</span>
               {active && <div style={{ width:22, height:3, borderRadius:3, background:"#7472A8", marginTop:2 }}/>}
             </button>
           ); })}
