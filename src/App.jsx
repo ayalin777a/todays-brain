@@ -406,7 +406,7 @@ function CheckRow({ item, color, onToggle, onDelete, t }) {
   };
   return (
     <div ref={ref} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 6px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
+      style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 6px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
       {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
       <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.checked?"scale(1.1)":"scale(1)", opacity:item.checked?0.45:1 }}>
         {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
