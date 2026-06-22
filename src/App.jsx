@@ -359,7 +359,7 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAd
           <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${cat.color},${mix(cat.color,-0.1)})`, transition:"width 0.4s cubic-bezier(.4,0,.2,1)" }}/>
         </div>
       )}
-      <div style={{ background:"#FFFCF8", padding:"8px 4px" }}>
+      <div style={{ background:"#FFFCF8", padding:"8px 0" }}>
         {items.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>{t("no_tasks")}</div>}
         {items.map(item=>(
           isTask
@@ -381,7 +381,7 @@ function TaskRow({ item, color, onToggle, onDelete, onEdit, t }) {
   };
   return (
     <div ref={ref} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 6px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
+      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 8px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
       {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
       <button onClick={handleToggle} style={{ width:24, height:24, borderRadius:8, flexShrink:0, border:`2.5px solid ${color}`, background:item.done?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.done?"scale(1.1)":"scale(1)", opacity:item.done?0.5:1 }}>
         {item.done && <span style={{ color:"#fff", fontSize:13, fontWeight:900, lineHeight:1 }}>✓</span>}
@@ -406,7 +406,7 @@ function CheckRow({ item, color, onToggle, onDelete, t }) {
   };
   return (
     <div ref={ref} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ display:"flex", alignItems:"center", gap:2, padding:"9px 6px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
+      style={{ display:"flex", alignItems:"center", gap:2, padding:"9px 8px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
       {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
       <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.checked?"scale(1.1)":"scale(1)", opacity:item.checked?0.45:1 }}>
         {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
