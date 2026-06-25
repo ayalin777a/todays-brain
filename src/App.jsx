@@ -337,8 +337,7 @@ function Modal({ title, accent="#7c6ef4", onClose, children }) {
   );
 }
 
-function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAdd, isTask=true, t }) {
-  const [expandedId, setExpandedId] = useState(null);
+function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAdd, isTask=true, t, expandedId, onExpand }) {
   const done  = items.filter(i=>i.done??i.checked).length;
   const total = items.length;
   const allDone = total>0 && done===total;
@@ -348,7 +347,6 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAd
     if(da!==db) return da?1:-1;
     return a.ts-b.ts;
   });
-  const handleExpand = (id) => setExpandedId(prev=>prev===id?null:id);
   return (
     <div style={{ borderRadius:20, overflow:"hidden", marginBottom:16, boxShadow: allDone ? "0 1px 4px #0F0E2A08" : "0 2px 10px #0F0E2A0c", transition:"box-shadow 0.3s" }}>
       <div style={{ background:`linear-gradient(100deg,${cat.color}ee,${mix(cat.color,0.4)}cc)`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8 }}>
@@ -370,8 +368,8 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAd
         {sorted.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>{t("no_tasks")}</div>}
         {sorted.map(item=>(
           isTask
-            ? <TaskRow  key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} onEdit={onEditItem} t={t} expanded={expandedId===item.id} onExpand={()=>handleExpand(item.id)}/>
-            : <CheckRow key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} t={t} expanded={expandedId===item.id} onExpand={()=>handleExpand(item.id)}/>
+            ? <TaskRow  key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} onEdit={onEditItem} t={t} expanded={expandedId===item.id} onExpand={()=>onExpand(item.id)}/>
+            : <CheckRow key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} t={t} expanded={expandedId===item.id} onExpand={()=>onExpand(item.id)}/>
         ))}
       </div>
     </div>
@@ -521,6 +519,8 @@ export default function App() {
 
   const [filterCat,  setFilterCat]  = useState("all");
   const [filterDate, setFilterDate] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const handleExpand = (id) => setExpandedId(prev=>prev===id?null:id);
   const [mAddTask, setMAddTask] = useState(false);
   const [mAddCl,   setMAddCl]   = useState(false);
   const [mAddTCat, setMAddTCat] = useState(false);
@@ -673,7 +673,7 @@ export default function App() {
                 visibleCats.map(cat=>{
                   const items = tasks.filter(tk=>tk.catId===cat.id).filter(activeDateFilter).sort((a,b)=>{ if(a.done!==b.done) return a.done?1:-1; return a.ts-b.ts; });
                   if(items.length===0 && filterDate) return null;
-                  return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} onAdd={()=>{ setFTask({title:"",catId:cat.id,due:filterDate||""}); setMAddTask(true); }} t={t}/>;
+                  return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} onAdd={()=>{ setFTask({title:"",catId:cat.id,due:filterDate||""}); setMAddTask(true); }} t={t} expandedId={expandedId} onExpand={handleExpand}/>;
                 })
               )}
               {tCats.length>0 && tasks.filter(activeDateFilter).length===0 && !filterDate && (
@@ -699,7 +699,7 @@ export default function App() {
                   <div style={{ marginTop:8, fontSize:14, fontWeight:700 }}>{t("no_cats_yet")}</div>
                 </div>
               ) : (
-                cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} onAdd={()=>{ setFCl({title:"",clCatId:cat.id,repeat:"daily"}); setMAddCl(true); }} t={t}/>; })
+                cCats.map(cat=>{ const items=clItems.filter(c=>c.clCatId===cat.id); return <CategoryCard key={cat.id} cat={cat} items={items} isTask={false} onToggleItem={toggleCl} onDeleteItem={deleteCl} onAdd={()=>{ setFCl({title:"",clCatId:cat.id,repeat:"daily"}); setMAddCl(true); }} t={t} expandedId={expandedId} onExpand={handleExpand}/>; })
               )}
               <button onClick={()=>setMAddCCat(true)} style={{ width:"100%", padding:"12px", borderRadius:16, border:"2px dashed #D8D0EC", background:"transparent", color:"#C0B8CC", fontWeight:800, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>{t("add_cat")}</button>
             </div>
