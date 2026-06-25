@@ -349,14 +349,15 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAd
   });
   return (
     <div style={{ borderRadius:20, overflow:"hidden", marginBottom:16, boxShadow: allDone ? "0 1px 4px #0F0E2A08" : "0 2px 10px #0F0E2A0c", transition:"box-shadow 0.3s" }}>
-      <div style={{ background:`linear-gradient(100deg,${cat.color}ee,${mix(cat.color,0.4)}cc)`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8 }}>
-        <span style={{ fontSize:18 }}>{cat.emoji}</span>
-        <span style={{ fontWeight:900, fontSize:15, color:"#fff", flex:1, letterSpacing:0.3 }}>{cat.name}</span>
-        <div style={{ background: allDone ? "#fff" : "rgba(255,255,255,0.3)", borderRadius:20, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
+      <div style={{ position:"relative", background:`linear-gradient(100deg,${cat.color}ee,${mix(cat.color,0.4)}cc)`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8 }}>
+        <span style={{ fontSize:18, position:"relative", zIndex:1 }}>{cat.emoji}</span>
+        <span style={{ position:"absolute", left:0, right:0, textAlign:"center", fontWeight:900, fontSize:15, color:"#fff", letterSpacing:0.3, pointerEvents:"none" }}>{cat.name}</span>
+        <div style={{ flex:1 }}/>
+        <div style={{ background: allDone ? "#fff" : "rgba(255,255,255,0.3)", borderRadius:20, padding:"3px 10px", display:"flex", alignItems:"center", gap:5, position:"relative", zIndex:1 }}>
           <span style={{ fontSize:11, fontWeight:900, color: allDone ? cat.color : "#fff" }}>{allDone ? t("badge_done") : `${done}/${total}`}</span>
         </div>
         {onAdd && (
-          <button onClick={onAdd} style={{ width:26, height:26, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.35)", color:"#fff", fontSize:18, lineHeight:1, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontWeight:400 }}>＋</button>
+          <button onClick={onAdd} style={{ width:26, height:26, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.35)", color:"#fff", fontSize:18, lineHeight:1, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontWeight:400, position:"relative", zIndex:1 }}>＋</button>
         )}
       </div>
       {total>0 && (
