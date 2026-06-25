@@ -338,10 +338,17 @@ function Modal({ title, accent="#7c6ef4", onClose, children }) {
 }
 
 function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAdd, isTask=true, t }) {
+  const [expandedId, setExpandedId] = useState(null);
   const done  = items.filter(i=>i.done??i.checked).length;
   const total = items.length;
   const allDone = total>0 && done===total;
   const pct = total===0 ? 0 : Math.round(done/total*100);
+  const sorted = [...items].sort((a,b)=>{
+    const da = a.done??a.checked, db = b.done??b.checked;
+    if(da!==db) return da?1:-1;
+    return a.ts-b.ts;
+  });
+  const handleExpand = (id) => setExpandedId(prev=>prev===id?null:id);
   return (
     <div style={{ borderRadius:20, overflow:"hidden", marginBottom:16, boxShadow: allDone ? "0 1px 4px #0F0E2A08" : "0 2px 10px #0F0E2A0c", transition:"box-shadow 0.3s" }}>
       <div style={{ background:`linear-gradient(100deg,${cat.color}ee,${mix(cat.color,0.4)}cc)`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8 }}>
@@ -360,59 +367,61 @@ function CategoryCard({ cat, items, onToggleItem, onDeleteItem, onEditItem, onAd
         </div>
       )}
       <div style={{ background:"#FFFCF8", padding:"8px 0" }}>
-        {items.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>{t("no_tasks")}</div>}
-        {items.map(item=>(
+        {sorted.length===0 && <div style={{ padding:"14px 4px", fontSize:13, color:"#C0B8CC", textAlign:"center" }}>{t("no_tasks")}</div>}
+        {sorted.map(item=>(
           isTask
-            ? <TaskRow  key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} onEdit={onEditItem} t={t}/>
-            : <CheckRow key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} t={t}/>
+            ? <TaskRow  key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} onEdit={onEditItem} t={t} expanded={expandedId===item.id} onExpand={()=>handleExpand(item.id)}/>
+            : <CheckRow key={item.id} item={item} color={cat.color} onToggle={onToggleItem} onDelete={onDeleteItem} t={t} expanded={expandedId===item.id} onExpand={()=>handleExpand(item.id)}/>
         ))}
       </div>
     </div>
   );
 }
 
-function TaskRow({ item, color, onToggle, onDelete, onEdit, t }) {
-  const [hov, setHov] = useState(false);
+function TaskRow({ item, color, onToggle, onDelete, onEdit, t, expanded, onExpand }) {
   const ref = useRef(null);
   const [sparks, setSparks] = useState([]);
-  const handleToggle = () => {
+  const handleToggle = (e) => {
+    e.stopPropagation();
     if(!item.done) { const r=ref.current?.getBoundingClientRect(); if(r) setSparks(s=>[...s,{id:uid(),x:r.left+r.width*0.15,y:r.top+r.height/2,color}]); }
     onToggle(item.id);
   };
   return (
-    <div ref={ref} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px 10px 12px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
+    <div ref={ref} onClick={onExpand}
+      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px 10px 12px", borderBottom:"1px solid #F3EFF8", cursor:"pointer" }}>
       {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
-      <button onClick={handleToggle} style={{ width:24, height:24, borderRadius:8, flexShrink:0, border:`2.5px solid ${color}`, background:item.done?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.done?"scale(1.1)":"scale(1)", opacity:item.done?0.5:1 }}>
+      <button onClick={handleToggle} style={{ width:24, height:24, borderRadius:8, flexShrink:0, border:`2.5px solid ${color}`, background:item.done?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", opacity:item.done?0.5:1 }}>
         {item.done && <span style={{ color:"#fff", fontSize:13, fontWeight:900, lineHeight:1 }}>✓</span>}
       </button>
-      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none", opacity:item.done?0.45:1, transition:"opacity 0.25s" }}>{item.title}</span>
+      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none", opacity:item.done?0.45:1 }}>{item.title}</span>
       {item.due && <span style={{ fontSize:11, fontWeight:700, color:item.due<today()?"#FF6B6B":"#B0A8C8", background:item.due<today()?"#FF6B6B18":"#F3EFF8", padding:"2px 7px", borderRadius:8 }}>📅{fmtD(item.due)}</span>}
-      <div style={{ display:"flex", gap:2, flexShrink:0, opacity:hov?1:0, transition:"opacity 0.18s", pointerEvents:hov?"auto":"none" }}>
-        <button onClick={()=>onEdit(item)} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>{t("btn_edit")}</button>
-        <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
+      <div style={{ display:"flex", gap:2, flexShrink:0, opacity:expanded?1:0, transition:"opacity 0.18s", pointerEvents:expanded?"auto":"none" }}>
+        <button onClick={e=>{e.stopPropagation();onEdit(item);}} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>{t("btn_edit")}</button>
+        <button onClick={e=>{e.stopPropagation();onDelete(item.id);}} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
       </div>
     </div>
   );
 }
 
-function CheckRow({ item, color, onToggle, onDelete, t }) {
-  const [hov, setHov] = useState(false);
+function CheckRow({ item, color, onToggle, onDelete, t, expanded, onExpand }) {
   const ref = useRef(null);
   const [sparks, setSparks] = useState([]);
-  const handleToggle = () => {
+  const handleToggle = (e) => {
+    e.stopPropagation();
     if(!item.checked) { const r=ref.current?.getBoundingClientRect(); if(r) setSparks(s=>[...s,{id:uid(),x:r.left+r.width*0.12,y:r.top+r.height/2,color}]); }
     onToggle(item.id);
   };
   return (
-    <div ref={ref} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 16px 9px 12px", borderBottom:"1px solid #F3EFF8", transition:"opacity 0.25s" }}>
+    <div ref={ref} onClick={onExpand}
+      style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 16px 9px 12px", borderBottom:"1px solid #F3EFF8", cursor:"pointer" }}>
       {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
-      <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", transform:hov&&!item.checked?"scale(1.1)":"scale(1)", opacity:item.checked?0.45:1 }}>
+      <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", opacity:item.checked?0.45:1 }}>
         {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
       </button>
-      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1, transition:"opacity 0.25s" }}>{item.title}</span>
-      {hov && <button onClick={()=>onDelete(item.id)} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>}
+      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1 }}>{item.title}</span>
+      <div style={{ display:"flex", gap:2, flexShrink:0, opacity:expanded?1:0, transition:"opacity 0.18s", pointerEvents:expanded?"auto":"none" }}>
+        <button onClick={e=>{e.stopPropagation();onDelete(item.id);}} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
+      </div>
     </div>
   );
 }
@@ -662,7 +671,7 @@ export default function App() {
                 </div>
               ) : (
                 visibleCats.map(cat=>{
-                  const items = tasks.filter(tk=>tk.catId===cat.id).filter(activeDateFilter).sort((a,b)=>a.ts-b.ts);
+                  const items = tasks.filter(tk=>tk.catId===cat.id).filter(activeDateFilter).sort((a,b)=>{ if(a.done!==b.done) return a.done?1:-1; return a.ts-b.ts; });
                   if(items.length===0 && filterDate) return null;
                   return <CategoryCard key={cat.id} cat={cat} items={items} isTask={true} onToggleItem={toggleTask} onDeleteItem={deleteTask} onEditItem={setMEditT} onAdd={()=>{ setFTask({title:"",catId:cat.id,due:filterDate||""}); setMAddTask(true); }} t={t}/>;
                 })
