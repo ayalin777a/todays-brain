@@ -387,14 +387,15 @@ function TaskRow({ item, color, onToggle, onDelete, onEdit, t, expanded, onExpan
   };
   return (
     <div ref={ref} onClick={onExpand}
-      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px 10px 12px", borderBottom:"1px solid #F3EFF8", cursor:"pointer" }}>
+      style={{ position:"relative", display:"flex", alignItems:"center", gap:10, padding:"10px 16px 10px 12px", borderBottom:"1px solid #F3EFF8", cursor:"pointer" }}>
       {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
-      <button onClick={handleToggle} style={{ width:24, height:24, borderRadius:8, flexShrink:0, border:`2.5px solid ${color}`, background:item.done?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", opacity:item.done?0.5:1 }}>
+      <button onClick={handleToggle} style={{ width:24, height:24, borderRadius:8, flexShrink:0, border:`2.5px solid ${color}`, background:item.done?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", opacity:item.done?0.5:1, position:"relative", zIndex:1 }}>
         {item.done && <span style={{ color:"#fff", fontSize:13, fontWeight:900, lineHeight:1 }}>✓</span>}
       </button>
-      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none", opacity:item.done?0.45:1 }}>{item.title}</span>
-      {item.due && <span style={{ fontSize:11, fontWeight:700, color:item.due<today()?"#FF6B6B":"#B0A8C8", background:item.due<today()?"#FF6B6B18":"#F3EFF8", padding:"2px 7px", borderRadius:8 }}>📅{fmtD(item.due)}</span>}
-      <div style={{ display:"flex", gap:2, flexShrink:0, opacity:expanded?1:0, transition:"opacity 0.18s", pointerEvents:expanded?"auto":"none" }}>
+      <span style={{ position:"absolute", left:0, right:0, textAlign:"center", fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.done?"line-through":"none", opacity:item.done?0.45:1, pointerEvents:"none" }}>{item.title}</span>
+      <div style={{ flex:1 }}/>
+      {item.due && <span style={{ fontSize:11, fontWeight:700, color:item.due<today()?"#FF6B6B":"#B0A8C8", background:item.due<today()?"#FF6B6B18":"#F3EFF8", padding:"2px 7px", borderRadius:8, position:"relative", zIndex:1 }}>📅{fmtD(item.due)}</span>}
+      <div style={{ display:"flex", gap:2, flexShrink:0, opacity:expanded?1:0, transition:"opacity 0.18s", pointerEvents:expanded?"auto":"none", position:"relative", zIndex:1 }}>
         <button onClick={e=>{e.stopPropagation();onEdit(item);}} style={{ background:"none",border:"1px solid #E0DCF0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#9B8FC8",fontWeight:700,fontFamily:"inherit" }}>{t("btn_edit")}</button>
         <button onClick={e=>{e.stopPropagation();onDelete(item.id);}} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
       </div>
@@ -412,13 +413,14 @@ function CheckRow({ item, color, onToggle, onDelete, t, expanded, onExpand }) {
   };
   return (
     <div ref={ref} onClick={onExpand}
-      style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 16px 9px 12px", borderBottom:"1px solid #F3EFF8", cursor:"pointer" }}>
+      style={{ position:"relative", display:"flex", alignItems:"center", gap:8, padding:"9px 16px 9px 12px", borderBottom:"1px solid #F3EFF8", cursor:"pointer" }}>
       {sparks.map(s=><Sparkle key={s.id} color={s.color} x={s.x} y={s.y}/>)}
-      <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", opacity:item.checked?0.45:1 }}>
+      <button onClick={handleToggle} style={{ width:22, height:22, borderRadius:"50%", flexShrink:0, border:`2.5px solid ${color}`, background:item.checked?color:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.2s, transform 0.1s", opacity:item.checked?0.45:1, position:"relative", zIndex:1 }}>
         {item.checked && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
       </button>
-      <span style={{ flex:1, fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1 }}>{item.title}</span>
-      <div style={{ display:"flex", gap:2, flexShrink:0, opacity:expanded?1:0, transition:"opacity 0.18s", pointerEvents:expanded?"auto":"none" }}>
+      <span style={{ position:"absolute", left:0, right:0, textAlign:"center", fontSize:14, color:"#0F0E2A", fontWeight:500, textDecoration:item.checked?"line-through":"none", opacity:item.checked?0.45:1, pointerEvents:"none" }}>{item.title}</span>
+      <div style={{ flex:1 }}/>
+      <div style={{ display:"flex", gap:2, flexShrink:0, opacity:expanded?1:0, transition:"opacity 0.18s", pointerEvents:expanded?"auto":"none", position:"relative", zIndex:1 }}>
         <button onClick={e=>{e.stopPropagation();onDelete(item.id);}} style={{ background:"none",border:"1px solid #FFE0E0",borderRadius:6,cursor:"pointer",fontSize:11,padding:"3px 8px",color:"#FF8080",fontWeight:700,fontFamily:"inherit" }}>{t("btn_delete")}</button>
       </div>
     </div>
