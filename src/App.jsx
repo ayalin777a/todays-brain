@@ -5,6 +5,8 @@ const PALETTE = {
     { hex:"#C0766A", label:"Terracotta" },
     { hex:"#C8944A", label:"Burnt" },
     { hex:"#C8A85A", label:"Gold" },
+    { hex:"#E0B030", label:"Warm Gold" },
+    { hex:"#D4788A", label:"Rose Pink" },
     { hex:"#5FAAB0", label:"Teal" },
     { hex:"#7BAFD4", label:"Slate Blue" },
     { hex:"#8F87C8", label:"Lavender" },
